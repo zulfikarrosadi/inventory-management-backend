@@ -1,0 +1,85 @@
+openapi: '3.0.2'
+info:
+  title: Inventory Management API
+  version: '0.1'
+servers:
+  - url: http://localhost:3000/api
+tags:
+  - name: inventory
+    description: API to get and manipulate inventory data
+
+paths:
+  /stocks:
+    get:
+      summary: get all stocks
+      tags:
+        - inventory
+      responses:
+        '200':
+          description: successfully get all stocks
+          content:
+            application/json:
+              example:
+                status: success
+                data:
+                  stocks:
+                    - id: 1
+                      name: book
+                      total: 10
+                      created_at: '12/12/2002'
+                      updated_at: '12/12/2002'
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      stocks:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            schema:
+                              $ref: '#/components/schemas/stock'
+        '404':
+          description: inventory is empty
+          content:
+            application/json:
+              example:
+                status: fail
+                errors:
+                  code: 404
+                  message: inventory is empty
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  errors:
+                    type: object
+                    properties:
+                      code:
+                        type: number
+                      message:
+                        type: string
+
+components:
+  schemas:
+    stock:
+      type: object
+      properties:
+        property:
+          type: object
+          properties:
+            id:
+              type: number
+            name:
+              type: string
+            total:
+              type: number
+            created_at:
+              type: string
+            updated_at:
+              type: string
