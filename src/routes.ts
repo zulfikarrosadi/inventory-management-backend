@@ -6,6 +6,14 @@ import { createUserSchema } from './user/schema';
 import { loginSchema } from './auth/schema';
 import { deserializeToken } from './middlewares/deserializeToken';
 import requiredLogin from './middlewares/requiredLogin';
+import {
+  createStock,
+  deleteStock,
+  getStockById,
+  getStocks,
+  updateStock,
+} from './inventory/handler';
+import { createStockSchema, updateStockSchema } from './inventory/schema';
 
 export default function routes(app: Express) {
   app.post('/api/register', validateInput(createUserSchema), registerUser);
@@ -16,4 +24,10 @@ export default function routes(app: Express) {
   app.use(requiredLogin);
   app.get('/api/users', getCurrentUser);
   app.get('/api/users/:id', getUser);
+
+  app.post('/api/stocks', validateInput(createStockSchema), createStock);
+  app.get('/api/stocks', getStocks);
+  app.get('/api/stocks/:id', getStockById);
+  app.put('/api/stocks/:id', validateInput(updateStockSchema), updateStock);
+  app.delete('/api/stocks/:id', deleteStock);
 }
