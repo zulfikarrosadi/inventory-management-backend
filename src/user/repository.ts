@@ -1,13 +1,16 @@
-import { RowDataPacket } from 'mysql2';
+import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import pool from '../db';
 
-export async function createUser(data: { username: string; password: string }) {
+export async function createUser(data: {
+  username: string;
+  password: string;
+}): Promise<ResultSetHeader | Error> {
   try {
     const [rows] = await pool.execute(
       'INSERT INTO users (username, password) VALUES(?, ?)',
       [data.username, data.password],
     );
-    return rows;
+    return rows as ResultSetHeader;
   } catch (error: any) {
     console.log(error);
     if (error.errno === 1062) {
