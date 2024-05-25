@@ -119,15 +119,23 @@ export async function updateStock(
     if (result instanceof Error) {
       throw new Error(result.message);
     }
-
+    const updatedStock = await findStockById(id);
+    if (updatedStock instanceof Error) {
+      throw new Error(updatedStock.message);
+    }
     return res.status(200).json({
       status: 'success',
       data: {
         stock: {
           id: id,
-          name: req.body.name,
-          total: req.body.total,
-          updated_at: req.body.updated_at,
+          name: updatedStock.name,
+          purchase_date: updatedStock.purchase_date,
+          stock_due_date: updatedStock.stock_due_date,
+          supplier: updatedStock.supplier,
+          quantity: updatedStock.quantity,
+          cost_price: updatedStock.cost_price,
+          amount: updatedStock.cost_price * updatedStock.quantity,
+          updated_at: updatedStock.updated_at,
         },
       },
     });
