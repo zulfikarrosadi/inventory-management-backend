@@ -6,12 +6,12 @@ export async function saveWarehouse(
   data: CreateWarehouse,
 ): Promise<ResultSetHeader | Error> {
   try {
-    const result = await pool.execute(
+    const [rows] = await pool.execute(
       'INSERT INTO warehouses (name, address) VALUES (?,?)',
       [data.name, data.address],
     );
 
-    return result as unknown as ResultSetHeader;
+    return rows as unknown as ResultSetHeader;
   } catch (error: any) {
     console.log('save_warehouse', error);
 
