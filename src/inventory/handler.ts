@@ -28,7 +28,7 @@ export async function createStock(
       .status(201)
       .json({ status: 'success', data: { stocks: { id: result.insertId } } });
   } catch (error: any) {
-    console.log(error);
+    console.log('create_stock', error);
     return res
       .status(400)
       .json({ status: 'fail', errors: { code: 400, message: error.message } });
