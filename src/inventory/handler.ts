@@ -109,7 +109,12 @@ export async function updateStock(
 ) {
   try {
     const id = parseInt(req.params.id, 10);
-    const result = await updateStockById(id, req.body);
+    const result = await updateStockById(id, {
+      ...req.body,
+      purchase_date: new Date(req.body.purchase_date).getTime(),
+      stock_due_date: new Date(req.body.stock_due_date).getTime(),
+      updated_at: new Date(req.body.updated_at).getTime(),
+    });
 
     if (result instanceof Error) {
       throw new Error(result.message);
