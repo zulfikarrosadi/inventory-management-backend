@@ -7,7 +7,7 @@ export async function saveStock(
 ): Promise<ResultSetHeader | Error> {
   try {
     const [rows] = await pool.execute(
-      'INSERT INTO stocks (name, supplier, quantity, cost_price, purchase_date, stock_due_date, created_at) VALUES (?,?,?,?,?,?,?)',
+      'INSERT INTO stocks (name, supplier, quantity, cost_price, purchase_date, stock_due_date, created_at, warehouse_id) VALUES (?,?,?,?,?,?,?,?)',
       [
         data.name,
         data.supplier,
@@ -16,6 +16,7 @@ export async function saveStock(
         data.purchase_date,
         data.stock_due_date,
         data.created_at,
+        data.warehouse_id,
       ],
     );
     return rows as ResultSetHeader;
