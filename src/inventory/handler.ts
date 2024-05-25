@@ -41,9 +41,24 @@ export async function getStocks(req: Request, res: Response<ApiResponse>) {
     if (result instanceof Error) {
       throw new Error(result.message);
     }
-    return res
-      .status(200)
-      .json({ status: 'success', data: { stocks: result } });
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        stocks: result.map((stock) => {
+          return {
+            id: stock.id,
+            name: stock.name,
+            purchase_date: stock.purchase_date,
+            stock_due_date: stock.stock_due_date,
+            supplier: stock.supplier,
+            quantity: stock.quantity,
+            cost_price: stock.cost_price,
+            amount: stock.cost_price * stock.quantity,
+          };
+        }),
+      },
+    });
   } catch (error: any) {
     console.log(error);
 
