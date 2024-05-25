@@ -2,10 +2,10 @@ import { createPool } from 'mysql2/promise';
 import 'dotenv/config';
 
 const connection = createPool({
-  database: 'inventory_system',
-  user: 'root',
-  password: '',
-  host: 'localhost',
+  database: process.env.DB_DATABASE,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  host: process.env.DB_HOST,
   port: 3306,
 });
 
