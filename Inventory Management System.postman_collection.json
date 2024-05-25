@@ -111,7 +111,21 @@
 									"if(pm.response.code === 201) {\r",
 									"    const result = pm.response.json()\r",
 									"    pm.collectionVariables.set(\"current_stock_id\", result.data.stocks.id)\r",
-									"}"
+									"}\r",
+									"\r",
+									"pm.test('should return 201 status code', function() {\r",
+									"    pm.response.to.have.status(201)\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -122,7 +136,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomNoun}}\",\r\n    \"total\": 10\r\n}",
+							"raw": "{\r\n    \"name\": \"{{$randomNoun}}\",\r\n    \"quantity\": 10,\r\n    \"purchase_date\": \"{{$randomDateRecent}}\",\r\n    \"stock_due_date\": \"{{$randomDateFuture}}\",\r\n    \"supplier\": \"{{$randomCompanyName}}\",\r\n    \"cost_price\": 4500,\r\n    \"created_at\": \"{{$randomDateRecent}}\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -212,12 +226,24 @@
 				},
 				{
 					"name": "Update Stocks",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const purchase_date_iso = new Date().toISOString()\r",
+									"pm.collectionVariables.set('purchase_date', purchase_date_iso)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "PUT",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomNoun}}\",\r\n    \"total\": 2,\r\n    \"updated_at\": \"{{$randomDateRecent}}\"\r\n}",
+							"raw": "{\r\n    \"name\": \"{{$randomNoun}}\",\r\n    \"quantity\": 10,\r\n    \"purchase_date\": \"{{purchase_date}}\",\r\n    \"stock_due_date\": \"{{$randomDateFuture}}\",\r\n    \"supplier\": \"{{$randomCompanyName}}\",\r\n    \"cost_price\": 4500,\r\n    \"updated_at\": \"{{$randomDateRecent}}\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -328,6 +354,10 @@
 			"key": "current_stock_id",
 			"value": "",
 			"type": "default"
+		},
+		{
+			"key": "purchase_date",
+			"value": ""
 		}
 	]
 }
