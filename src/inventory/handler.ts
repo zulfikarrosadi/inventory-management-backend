@@ -14,7 +14,12 @@ export async function createStock(
   res: Response<ApiResponse>,
 ) {
   try {
-    const result = await saveStock({ ...req.body });
+    const result = await saveStock({
+      ...req.body,
+      purchase_date: new Date(req.body.purchase_date).getTime(),
+      stock_due_date: new Date(req.body.stock_due_date).getTime(),
+      created_at: new Date(req.body.created_at).getTime(),
+    });
     if (result instanceof Error) {
       throw new Error(result.message);
     }
