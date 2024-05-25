@@ -85,9 +85,12 @@ export async function getStockById(
         stocks: {
           id: result.id,
           name: result.name,
-          total: result.total,
-          created_at: result.created_at,
-          updated_at: result.updated_at,
+          purchase_date: result.purchase_date,
+          stock_due_date: result.stock_due_date,
+          supplier: result.supplier,
+          quantity: result.quantity,
+          cost_price: result.cost_price,
+          amount: result.cost_price * result.quantity,
         },
       },
     });
