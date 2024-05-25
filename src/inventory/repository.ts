@@ -7,8 +7,16 @@ export async function saveStock(
 ): Promise<ResultSetHeader | Error> {
   try {
     const [rows] = await pool.execute(
-      'INSERT INTO stocks (name, total) VALUES (?,?)',
-      [data.name, data.total],
+      'INSERT INTO stocks (name, supplier, quantity, cost_price, purchase_date, stock_due_date, created_at) VALUES (?,?,?,?,?,?,?)',
+      [
+        data.name,
+        data.supplier,
+        data.quantity,
+        data.cost_price,
+        data.purchase_date,
+        data.stock_due_date,
+        data.created_at,
+      ],
     );
     return rows as ResultSetHeader;
   } catch (error: any) {
@@ -17,16 +25,16 @@ export async function saveStock(
   }
 }
 
-export async function findStocks(): Promise<RowDataPacket[] | Error> {
+export async function findStocks(): Promise<Stock[] | Error> {
   try {
     const [rows] = await pool.query<RowDataPacket[]>(
-      'SELECT id, name, total, created_at, updated_at FROM stocks LIMIT 50',
+      'SELECT id, name, supplier, quantity, cost_price, purchase_date, stock_due_date, created_at, updated_at FROM stocks LIMIT 50',
     );
     if (!rows.length) {
       throw new Error('inventory is empty');
     }
 
-    return rows;
+    return rows as unknown as Stock[];
   } catch (error: any) {
     console.log(error);
 
@@ -37,7 +45,7 @@ export async function findStocks(): Promise<RowDataPacket[] | Error> {
 export async function findStockById(id: number): Promise<Stock | Error> {
   try {
     const [rows] = await pool.query<RowDataPacket[]>(
-      'SELECT id, name, total, created_at, updated_at FROM stocks WHERE id = ?',
+      'SELECT id, name, supplier, quantity, cost_price, purchase_date, stock_due_date, created_at, updated_at FROM stocks WHERE id = ?',
       [id],
     );
     if (rows.length < 1) {
@@ -56,8 +64,16 @@ export async function updateStockById(
 ): Promise<ResultSetHeader | Error> {
   try {
     const [rows] = await pool.execute(
-      'UPDATE stocks SET name = ?, total = ?, updated_at = ? WHERE id = ?',
-      [data.name, data.total, data.updated_at, id],
+      'UPDATE stocks SET name = ?, quantity = ?, cost_price = ?, purchase_date = ?, stock_due_date = ?, updated_at = ? WHERE id = ?',
+      [
+        data.name,
+        data.quantity,
+        data.cost_price,
+        data.purchase_date,
+        data.stock_due_date,
+        data.updated_at,
+        id,
+      ],
     );
     const result = rows as ResultSetHeader;
     if (result.affectedRows === 0) {
