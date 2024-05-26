@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+export type Warehouse = {
+  id: number;
+  name: string;
+  address: string;
+};
+
 export const createWarehouseSchema = z.object({
   name: z
     .string({ required_error: 'warehouse name is required' })
