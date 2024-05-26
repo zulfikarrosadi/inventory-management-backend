@@ -11,11 +11,12 @@ import {
   deleteStock,
   getStockById,
   getStocks,
+  getStocksFromWarehouse,
   updateStock,
 } from './inventory/handler';
 import { createStockSchema, updateStockSchema } from './inventory/schema';
 import { createWarehouseSchema } from './warehouse/schema';
-import { createWarehouse } from './warehouse/handler';
+import { createWarehouse, getWarehouses } from './warehouse/handler';
 
 export default function routes(app: Express) {
   app.post('/api/register', validateInput(createUserSchema), registerUser);
@@ -29,6 +30,7 @@ export default function routes(app: Express) {
 
   app.post('/api/stocks', validateInput(createStockSchema), createStock);
   app.get('/api/stocks', getStocks);
+  app.get('/api/warehouses/:id/stocks', getStocksFromWarehouse);
   app.get('/api/stocks/:id', getStockById);
   app.put('/api/stocks/:id', validateInput(updateStockSchema), updateStock);
   app.delete('/api/stocks/:id', deleteStock);
@@ -38,4 +40,5 @@ export default function routes(app: Express) {
     validateInput(createWarehouseSchema),
     createWarehouse,
   );
+  app.get('/api/warehouses', getWarehouses);
 }
