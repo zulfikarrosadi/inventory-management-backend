@@ -1,5 +1,5 @@
-import { ResultSetHeader } from 'mysql2';
-import { CreateWarehouse } from './schema';
+import { ResultSetHeader, RowDataPacket } from 'mysql2';
+import { CreateWarehouse, Warehouse } from './schema';
 import pool from '../db';
 
 export async function saveWarehouse(
@@ -17,4 +17,15 @@ export async function saveWarehouse(
 
     return error;
   }
+}
+
+export async function findWarehouses(): Promise<Warehouse[] | Error> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    'SELECT id, name, address FROM warehouses LIMIT 50',
+  );
+  if (!rows.length) {
+    throw new Error('no warehouse found, create new warehouse to start');
+  }
+
+  return rows as unknown as Warehouse[];
 }
