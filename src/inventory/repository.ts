@@ -26,23 +26,6 @@ export async function saveStock(
   }
 }
 
-export async function findStocks(): Promise<Stock[] | Error> {
-  try {
-    const [rows] = await pool.query<RowDataPacket[]>(
-      'SELECT id, name, supplier, quantity, cost_price, purchase_date, stock_due_date, created_at, updated_at FROM stocks LIMIT 50',
-    );
-    if (!rows.length) {
-      throw new Error('inventory is empty');
-    }
-
-    return rows as unknown as Stock[];
-  } catch (error: any) {
-    console.log(error);
-
-    return error;
-  }
-}
-
 export async function findStockById(id: number): Promise<Stock | Error> {
   try {
     const [rows] = await pool.query<RowDataPacket[]>(
