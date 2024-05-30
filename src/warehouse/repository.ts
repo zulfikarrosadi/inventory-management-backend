@@ -33,12 +33,12 @@ export async function findWarehouses(): Promise<Warehouse[] | Error> {
 export async function updateWarehouseById(
   id: number,
   data: UpdateWarehouse,
-): Promise<Warehouse | Error> {
+): Promise<ResultSetHeader | Error> {
   const [rows] = await pool.execute(
     'UPDATE warehouses SET name = ?, address = ? WHERE id = ?',
     [data.name, data.address, id],
   );
-  const result = rows as ResultSetHeader & Warehouse;
+  const result = rows as ResultSetHeader;
 
   if (result.affectedRows === 0) {
     throw new Error(
@@ -79,4 +79,16 @@ export async function findStocksFromWarehouse(warehouse_id: number) {
 
     return error;
   }
+}
+
+export async function deleteWarehouseById(id: number) {
+  const [rows] = await pool.execute('DELETE FROM warehouses WHERE id = ?', [
+    id,
+  ]);
+  const result = rows as ResultSetHeader;
+
+  if (result.affectedRows === 0) {
+    throw new Error('delete fail, enter the correct id and try again');
+  }
+  return true;
 }
