@@ -18,6 +18,8 @@ import {
   createWarehouse,
   getWarehouses,
   getStocksFromWarehouse,
+  updateWarehouse,
+  deleteWarehouse,
 } from './warehouse/handler';
 
 export default function routes(app: Express) {
@@ -40,6 +42,8 @@ export default function routes(app: Express) {
     validateInput(createWarehouseSchema),
     createWarehouse,
   );
+  app.put('/api/warehouses/:id', updateWarehouse);
   app.get('/api/warehouses/:id/stocks', getStocksFromWarehouse);
   app.get('/api/warehouses', getWarehouses);
+  app.delete('/api/warehouses/:id', deleteWarehouse);
 }
