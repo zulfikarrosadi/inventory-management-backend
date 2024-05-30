@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import {
+  deleteWarehouseById,
   findStocksFromWarehouse,
   findWarehouseById,
   findWarehouses,
@@ -113,5 +114,23 @@ export async function getStocksFromWarehouse(
     return res
       .status(404)
       .json({ status: 'fail', errors: { code: 404, message: error.message } });
+  }
+}
+
+export async function deleteWarehouse(
+  req: Request<{ id: string }>,
+  res: Response<ApiResponse>,
+) {
+  const warehouseId = parseInt(req.params.id, 10);
+  try {
+    await deleteWarehouseById(warehouseId);
+
+    return res.sendStatus(204);
+  } catch (error: any) {
+    console.log('delete_warehouse', error);
+
+    return res
+      .status(400)
+      .json({ status: 'fail', errors: { message: error.message, code: 400 } });
   }
 }
