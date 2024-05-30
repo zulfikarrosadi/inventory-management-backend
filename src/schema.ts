@@ -12,4 +12,6 @@ type ApiResponse = {
   };
 };
 
+export type CurrentUser = { user: { userId: number; username: string } };
+
 export default ApiResponse;
