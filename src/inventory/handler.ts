@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import {
   deleteStockById,
   findStockById,
-  findStocks,
   saveStock,
   updateStockById,
 } from './repository';
@@ -32,39 +31,6 @@ export async function createStock(
     return res
       .status(400)
       .json({ status: 'fail', errors: { code: 400, message: error.message } });
-  }
-}
-
-export async function getStocks(req: Request, res: Response<ApiResponse>) {
-  try {
-    const result = await findStocks();
-    if (result instanceof Error) {
-      throw new Error(result.message);
-    }
-
-    return res.status(200).json({
-      status: 'success',
-      data: {
-        stocks: result.map((stock) => {
-          return {
-            id: stock.id,
-            name: stock.name,
-            purchase_date: stock.purchase_date,
-            stock_due_date: stock.stock_due_date,
-            supplier: stock.supplier,
-            quantity: stock.quantity,
-            cost_price: stock.cost_price,
-            amount: stock.cost_price * stock.quantity,
-          };
-        }),
-      },
-    });
-  } catch (error: any) {
-    console.log(error);
-
-    return res
-      .status(404)
-      .json({ status: 'fail', errors: { code: 404, message: error.message } });
   }
 }
 
