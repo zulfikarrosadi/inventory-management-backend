@@ -34,9 +34,6 @@ export async function createWarehouse(
 export async function getWarehouses(req: Request, res: Response<ApiResponse>) {
   try {
     const result = await findWarehouses();
-    if (result instanceof Error) {
-      throw new Error(result.message);
-    }
 
     return res
       .status(200)
