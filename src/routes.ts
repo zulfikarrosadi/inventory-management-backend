@@ -10,13 +10,15 @@ import {
   createStock,
   deleteStock,
   getStockById,
-  getStocks,
-  getStocksFromWarehouse,
   updateStock,
 } from './inventory/handler';
 import { createStockSchema, updateStockSchema } from './inventory/schema';
 import { createWarehouseSchema } from './warehouse/schema';
-import { createWarehouse, getWarehouses } from './warehouse/handler';
+import {
+  createWarehouse,
+  getWarehouses,
+  getStocksFromWarehouse,
+} from './warehouse/handler';
 
 export default function routes(app: Express) {
   app.post('/api/register', validateInput(createUserSchema), registerUser);
