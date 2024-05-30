@@ -29,7 +29,6 @@ export default function routes(app: Express) {
   app.get('/api/users/:id', getUser);
 
   app.post('/api/stocks', validateInput(createStockSchema), createStock);
-  app.get('/api/warehouses/:id/stocks', getStocksFromWarehouse);
   app.get('/api/stocks/:id', getStockById);
   app.put('/api/stocks/:id', validateInput(updateStockSchema), updateStock);
   app.delete('/api/stocks/:id', deleteStock);
@@ -39,5 +38,6 @@ export default function routes(app: Express) {
     validateInput(createWarehouseSchema),
     createWarehouse,
   );
+  app.get('/api/warehouses/:id/stocks', getStocksFromWarehouse);
   app.get('/api/warehouses', getWarehouses);
 }
