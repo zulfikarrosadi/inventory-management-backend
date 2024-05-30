@@ -57,8 +57,9 @@ export async function updateWarehouse(
     if (result instanceof Error) {
       throw new Error(result.message);
     }
+    console.log(result);
 
-    const updatedWarehouse = await findWarehouseById(result.id);
+    const updatedWarehouse = await findWarehouseById(warehouseId);
 
     return res
       .status(200)
