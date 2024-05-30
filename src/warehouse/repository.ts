@@ -1,5 +1,5 @@
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
-import { CreateWarehouse, Warehouse } from './schema';
+import { CreateWarehouse, UpdateWarehouse, Warehouse } from './schema';
 import pool from '../db';
 
 export async function saveWarehouse(
@@ -28,4 +28,23 @@ export async function findWarehouses(): Promise<Warehouse[] | Error> {
   }
 
   return rows as unknown as Warehouse[];
+}
+
+export async function updateWarehouseById(
+  id: number,
+  data: UpdateWarehouse,
+): Promise<Warehouse | Error> {
+  const [rows] = await pool.execute(
+    'UPDATE warehouses SET name = ?, address = ? WHERE id = ?',
+    [data.name, data.address, id],
+  );
+  const result = rows as ResultSetHeader & Warehouse;
+
+  if (result.affectedRows === 0) {
+    throw new Error(
+      'failed to update warehouse, please enter correct data and try again',
+    );
+  }
+
+  return result;
 }
