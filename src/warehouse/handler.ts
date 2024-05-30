@@ -17,10 +17,10 @@ export async function createWarehouse(
     if (result instanceof Error) {
       throw new Error(result.message);
     }
-
+    const warehouses = await findWarehouses();
     return res.status(201).json({
       status: 'success',
-      data: { warehouse: { id: result.insertId } },
+      data: { warehouse: warehouses },
     });
   } catch (error: any) {
     console.log('create_warehouse', error);
