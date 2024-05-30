@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import {
+  findStocksFromWarehouse,
   findWarehouseById,
   findWarehouses,
   saveWarehouse,
@@ -64,6 +65,50 @@ export async function updateWarehouse(
       .json({ status: 'success', data: { warehouse: updatedWarehouse } });
   } catch (error: any) {
     console.log('update_warehouse', error);
+    return res
+      .status(404)
+      .json({ status: 'fail', errors: { code: 404, message: error.message } });
+  }
+}
+
+export async function getStocksFromWarehouse(
+  req: Request<{ id: string }>,
+  res: Response<ApiResponse>,
+) {
+  const warehouseId = parseInt(req.params.id, 10);
+  try {
+    const stocksFromWarehouse = await findStocksFromWarehouse(warehouseId);
+    if (stocksFromWarehouse instanceof Error) {
+      throw new Error(stocksFromWarehouse.message);
+    }
+    const warehouse = await findWarehouseById(warehouseId);
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        warehouse: {
+          id: warehouse.id,
+          name: warehouse.name,
+          address: warehouse.address,
+        },
+        stock: stocksFromWarehouse.map((stocks) => {
+          return {
+            id: stocks.id,
+            name: stocks.name,
+            purchase_date: stocks.purchase_date,
+            stock_due_date: stocks.stock_due_date,
+            supplier: stocks.supplier,
+            quantity: stocks.quantity,
+            cost_price: stocks.cost_price,
+            amount: stocks.cost_price * stocks.quantity,
+            updated_at: stocks.updated_at,
+          };
+        }),
+      },
+    });
+  } catch (error: any) {
+    console.log('get_stocks_from_warehouse', error);
+
     return res
       .status(404)
       .json({ status: 'fail', errors: { code: 404, message: error.message } });
