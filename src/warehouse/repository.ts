@@ -48,3 +48,17 @@ export async function updateWarehouseById(
 
   return result;
 }
+
+export async function findWarehouseById(id: number): Promise<Warehouse> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    'SELECT id, name, address FROM warehouses WHERE id = ?',
+    [id],
+  );
+  if (!rows.length) {
+    throw new Error(
+      'warehouse not found, please enter the correct id and try again',
+    );
+  }
+
+  return rows[0] as unknown as Warehouse;
+}
