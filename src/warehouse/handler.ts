@@ -45,3 +45,27 @@ export async function getWarehouses(req: Request, res: Response<ApiResponse>) {
       .json({ status: 'fail', errors: { code: 404, message: error.message } });
   }
 }
+
+export async function updateWarehouse(
+  req: Request<{ id: string }, {}, UpdateWarehouse>,
+  res: Response<ApiResponse>,
+) {
+  const warehouseId = parseInt(req.params.id, 10);
+  try {
+    const result = await updateWarehouseById(warehouseId, req.body);
+    if (result instanceof Error) {
+      throw new Error(result.message);
+    }
+
+    const updatedWarehouse = await findWarehouseById(result.id);
+
+    return res
+      .status(200)
+      .json({ status: 'success', data: { warehouse: updatedWarehouse } });
+  } catch (error: any) {
+    console.log('update_warehouse', error);
+    return res
+      .status(404)
+      .json({ status: 'fail', errors: { code: 404, message: error.message } });
+  }
+}
