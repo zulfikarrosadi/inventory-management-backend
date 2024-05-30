@@ -62,3 +62,21 @@ export async function findWarehouseById(id: number): Promise<Warehouse> {
 
   return rows[0] as unknown as Warehouse;
 }
+
+export async function findStocksFromWarehouse(warehouse_id: number) {
+  try {
+    const [rows] = await pool.query<RowDataPacket[]>(
+      `SELECT stocks.id, stocks.name, stocks.supplier, stocks.quantity, stocks.cost_price, stocks.purchase_date, stocks.stock_due_date, stocks.created_at, stocks.updated_at FROM warehouses JOIN stocks ON stocks.warehouse_id = warehouses.id WHERE warehouses.id = ?`,
+      [warehouse_id],
+    );
+    if (!rows.length) {
+      throw new Error('no stocks in this warehouse is found');
+    }
+
+    return rows;
+  } catch (error: any) {
+    console.log('find_stocks_from_warehouse', error);
+
+    return error;
+  }
+}
