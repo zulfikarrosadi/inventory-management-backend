@@ -8,18 +8,19 @@ import {
   updateWarehouseById,
 } from './repository';
 import { CreateWarehouse, UpdateWarehouse } from './schema';
-import ApiResponse from '../schema';
+import ApiResponse, { CurrentUser } from '../schema';
 
 export async function createWarehouse(
   req: Request<{}, {}, CreateWarehouse>,
-  res: Response<ApiResponse>,
+  res: Response<ApiResponse, CurrentUser>,
 ) {
   try {
     const result = await saveWarehouse(req.body);
     if (result instanceof Error) {
       throw new Error(result.message);
     }
-    const warehouses = await findWarehouses();
+
+    const warehouses = await findWarehouses(res.locals.user.userId);
     return res.status(201).json({
       status: 'success',
       data: { warehouse: warehouses },
@@ -33,9 +34,12 @@ export async function createWarehouse(
   }
 }
 
-export async function getWarehouses(req: Request, res: Response<ApiResponse>) {
+export async function getWarehouses(
+  req: Request,
+  res: Response<ApiResponse, CurrentUser>,
+) {
   try {
-    const result = await findWarehouses();
+    const result = await findWarehouses(res.locals.user.userId);
 
     return res
       .status(200)
@@ -50,17 +54,24 @@ export async function getWarehouses(req: Request, res: Response<ApiResponse>) {
 
 export async function updateWarehouse(
   req: Request<{ id: string }, {}, UpdateWarehouse>,
-  res: Response<ApiResponse>,
+  res: Response<ApiResponse, CurrentUser>,
 ) {
   const warehouseId = parseInt(req.params.id, 10);
   try {
-    const result = await updateWarehouseById(warehouseId, req.body);
+    const result = await updateWarehouseById(
+      warehouseId,
+      res.locals.user.userId,
+      req.body,
+    );
     if (result instanceof Error) {
       throw new Error(result.message);
     }
     console.log(result);
 
-    const updatedWarehouse = await findWarehouseById(warehouseId);
+    const updatedWarehouse = await findWarehouseById(
+      warehouseId,
+      res.locals.user.userId,
+    );
 
     return res
       .status(200)
@@ -75,15 +86,21 @@ export async function updateWarehouse(
 
 export async function getStocksFromWarehouse(
   req: Request<{ id: string }>,
-  res: Response<ApiResponse>,
+  res: Response<ApiResponse, CurrentUser>,
 ) {
   const warehouseId = parseInt(req.params.id, 10);
   try {
-    const stocksFromWarehouse = await findStocksFromWarehouse(warehouseId);
+    const stocksFromWarehouse = await findStocksFromWarehouse(
+      warehouseId,
+      res.locals.user.userId,
+    );
     if (stocksFromWarehouse instanceof Error) {
       throw new Error(stocksFromWarehouse.message);
     }
-    const warehouse = await findWarehouseById(warehouseId);
+    const warehouse = await findWarehouseById(
+      warehouseId,
+      res.locals.user.userId,
+    );
 
     return res.status(200).json({
       status: 'success',
@@ -119,11 +136,11 @@ export async function getStocksFromWarehouse(
 
 export async function deleteWarehouse(
   req: Request<{ id: string }>,
-  res: Response<ApiResponse>,
+  res: Response<ApiResponse, CurrentUser>,
 ) {
   const warehouseId = parseInt(req.params.id, 10);
   try {
-    await deleteWarehouseById(warehouseId);
+    await deleteWarehouseById(warehouseId, res.locals.user.userId);
 
     return res.sendStatus(204);
   } catch (error: any) {
