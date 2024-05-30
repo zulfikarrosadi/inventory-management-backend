@@ -1,6 +1,11 @@
 import { Request, Response } from 'express';
-import { findWarehouses, saveWarehouse } from './repository';
-import { CreateWarehouse } from './schema';
+import {
+  findWarehouseById,
+  findWarehouses,
+  saveWarehouse,
+  updateWarehouseById,
+} from './repository';
+import { CreateWarehouse, UpdateWarehouse } from './schema';
 import ApiResponse from '../schema';
 
 export async function createWarehouse(
