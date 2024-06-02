@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import {
   deleteWarehouseById,
+  findStocksFromAllWarehouses,
   findStocksFromWarehouse,
   findWarehouseById,
   findWarehouses,
@@ -15,7 +16,7 @@ export async function createWarehouse(
   res: Response<ApiResponse, CurrentUser>,
 ) {
   try {
-    const result = await saveWarehouse(req.body);
+    const result = await saveWarehouse(req.body, res.locals.user.userId);
     if (result instanceof Error) {
       throw new Error(result.message);
     }
@@ -110,7 +111,7 @@ export async function getStocksFromWarehouse(
           name: warehouse.name,
           address: warehouse.address,
         },
-        stock: stocksFromWarehouse.map((stocks) => {
+        stocks: stocksFromWarehouse.map((stocks) => {
           return {
             id: stocks.id,
             name: stocks.name,
@@ -127,7 +128,15 @@ export async function getStocksFromWarehouse(
     });
   } catch (error: any) {
     console.log('get_stocks_from_warehouse', error);
-
+    if (error.sqlState === '42S522') {
+      return res.status(400).json({
+        status: 'fail',
+        errors: {
+          code: 400,
+          message: 'fail to retrive stocks information, please try again',
+        },
+      });
+    }
     return res
       .status(404)
       .json({ status: 'fail', errors: { code: 404, message: error.message } });
@@ -149,5 +158,51 @@ export async function deleteWarehouse(
     return res
       .status(400)
       .json({ status: 'fail', errors: { message: error.message, code: 400 } });
+  }
+}
+
+export async function getStocksFromAllWarehouses(
+  req: Request,
+  res: Response<ApiResponse, CurrentUser>,
+) {
+  try {
+    const result = await findStocksFromAllWarehouses(res.locals.user.userId);
+    const warehouseMap = new Map();
+
+    result.forEach((item) => {
+      const warehouse = {
+        id: item.warehouse_id,
+        name: item.warehouse_name,
+        address: item.warehouse_address,
+      };
+      const stock = {
+        id: item.id,
+        name: item.name,
+        supplier: item.supplier,
+        quantity: item.quantity,
+        cost_price: item.cost_price,
+        purchase_date: item.purchase_date,
+        stock_due_date: item.stock_due_date,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+        amount: item.cost_price * item.quantity,
+      };
+
+      if (!warehouseMap.has(item.warehouse_id)) {
+        warehouseMap.set(item.warehouse_id, { ...warehouse, stocks: [] });
+      }
+
+      warehouseMap.get(item.warehouse_id).stocks.push(stock);
+    });
+
+    return res.status(200).json({
+      status: 'success',
+      data: { warehouses: Array.from(warehouseMap.values()) },
+    });
+  } catch (error: any) {
+    console.log('get_stocks_from_all_warehouses', error);
+    return res
+      .status(404)
+      .json({ status: 'fail', errors: { message: error.message, code: 404 } });
   }
 }

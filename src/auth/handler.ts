@@ -43,13 +43,13 @@ export async function login(
     return res
       .status(200)
       .cookie('accessToken', accessToken, {
-        secure: true,
+        secure: false,
         sameSite: 'none',
         httpOnly: true,
         maxAge: accessTokenMaxAge,
       })
       .cookie('refreshToken', refreshToken, {
-        secure: true,
+        secure: false,
         sameSite: 'none',
         httpOnly: true,
         maxAge: refreshTokenMaxAge,

@@ -99,6 +99,202 @@
 			]
 		},
 		{
+			"name": "Warehouse",
+			"item": [
+				{
+					"name": "Create Warehouse",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"if (pm.response.code === 201) {\r",
+									"    const result = pm.response.json();\r",
+									"    const warehouses = result.data.warehouse\r",
+									"    pm.collectionVariables.set('warehouse_id', warehouses[0].id)\r",
+									"    pm.collectionVariables.set('warehouse_id_to_delete', warehouses[warehouses.length - 1].id)\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"address\": \"{{$randomStreetAddress}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/warehouses",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"warehouses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Warehouses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {\r",
+									"    const result = pm.response.json();\r",
+									"    const warehouses = result.data.warehouse\r",
+									"    pm.collectionVariables.set('warehouse_id', warehouses[0].id)\r",
+									"    pm.collectionVariables.set('warehouse_id_to_delete', warehouses[warehouses.length - 1].id)\r",
+									"}\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/warehouses",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"warehouses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Stocks From Warehouses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/warehouses/:id/stocks",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"warehouses",
+								":id",
+								"stocks"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{warehouse_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Warehouse",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"address\": \"{{$randomStreetAddress}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/warehouses/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"warehouses",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{warehouse_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Warehouse",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {\r",
+									"    pm.response.to.have.status(204);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/warehouses/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"warehouses",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{warehouse_id_to_delete}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Inventory",
 			"item": [
 				{
@@ -136,44 +332,13 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomNoun}}\",\r\n    \"quantity\": 10,\r\n    \"purchase_date\": \"{{$randomDateRecent}}\",\r\n    \"stock_due_date\": \"{{$randomDateFuture}}\",\r\n    \"supplier\": \"{{$randomCompanyName}}\",\r\n    \"cost_price\": 4500,\r\n    \"created_at\": \"{{$randomDateRecent}}\"\r\n}",
+							"raw": "{\r\n    \"name\": \"{{$randomNoun}}\",\r\n    \"quantity\": 10,\r\n    \"purchase_date\": \"{{$randomDateRecent}}\",\r\n    \"stock_due_date\": \"{{$randomDateFuture}}\",\r\n    \"supplier\": \"{{$randomCompanyName}}\",\r\n    \"cost_price\": 4500,\r\n    \"created_at\": \"{{$randomDateRecent}}\",\r\n    \"warehouse_id\": {{warehouse_id}}\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": {
-							"raw": "{{base_url}}/stocks",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"stocks"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "All Stocks",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if(pm.response.code === 200) {\r",
-									"    const result = pm.response.json()\r",
-									"    pm.collectionVariables.set(\"current_stock_id\", result.data.stocks[0].id)\r",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
 						"url": {
 							"raw": "{{base_url}}/stocks",
 							"host": [
@@ -356,8 +521,14 @@
 			"type": "default"
 		},
 		{
-			"key": "purchase_date",
-			"value": ""
+			"key": "warehouse_id",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "warehouse_id_to_delete",
+			"value": "",
+			"type": "default"
 		}
 	]
 }

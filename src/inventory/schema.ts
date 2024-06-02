@@ -47,6 +47,7 @@ export const updateStockSchema = z.object({
   purchase_date: z.string({ required_error: 'purchase date is required' }),
   stock_due_date: z.string({ required_error: 'stock due date is required' }),
   updated_at: z.string({ required_error: 'updated_at is required' }),
+  warehouse_id: z.number({ required_error: 'warehouse id is required' }),
 });
 
 // purchase_date, stock_due_date, and created_at input are date string typed
