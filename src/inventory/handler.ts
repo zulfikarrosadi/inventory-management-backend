@@ -6,26 +6,50 @@ import {
   updateStockById,
 } from './repository';
 import { CreateStock, UpdateStock } from './schema';
-import ApiResponse from '../schema';
+import ApiResponse, { CurrentUser } from '../schema';
+import { findStocksFromWarehouse } from '../warehouse/repository';
 
 export async function createStock(
   req: Request<{}, {}, CreateStock>,
-  res: Response<ApiResponse>,
+  res: Response<ApiResponse, CurrentUser>,
 ) {
   try {
-    const result = await saveStock({
+    const newStock = await saveStock({
       ...req.body,
       purchase_date: new Date(req.body.purchase_date).getTime(),
       stock_due_date: new Date(req.body.stock_due_date).getTime(),
       created_at: new Date(req.body.created_at).getTime(),
     });
-    if (result instanceof Error) {
-      throw new Error(result.message);
+    if (newStock instanceof Error) {
+      throw new Error(newStock.message);
     }
+    const result = await findStocksFromWarehouse(
+      req.body.warehouse_id,
+      res.locals.user.userId,
+    );
 
-    return res
-      .status(201)
-      .json({ status: 'success', data: { stocks: { id: result.insertId } } });
+    return res.status(201).json({
+      status: 'success',
+      data: {
+        warehouse: {
+          id: result[0].warehouse_id,
+          name: result[0].warehouse_name,
+          address: result[0].warehouse_address,
+        },
+        stocks: result.map((stock) => {
+          return {
+            id: stock.id,
+            name: stock.name,
+            purchase_date: stock.purchase_date,
+            stock_due_date: stock.stock_due_date,
+            supplier: stock.supplier,
+            quantity: stock.quantity,
+            cost_price: stock.cost_price,
+            amount: stock.cost_price * stock.quantity,
+          };
+        }),
+      },
+    });
   } catch (error: any) {
     console.log('create_stock', error);
     return res
