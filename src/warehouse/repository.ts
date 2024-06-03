@@ -75,21 +75,15 @@ export async function findStocksFromWarehouse(
   warehouse_id: number,
   userId: number,
 ) {
-  try {
-    const [rows] = await pool.query<RowDataPacket[]>(
-      `SELECT stocks.id, stocks.name, stocks.supplier, stocks.quantity, stocks.cost_price, stocks.purchase_date, stocks.stock_due_date, stocks.created_at, stocks.updated_at FROM warehouses JOIN stocks ON stocks.warehouse_id = warehouses.id WHERE warehouses.id = ? AND warehouses.user_id = ?`,
-      [warehouse_id, userId],
-    );
-    if (!rows.length) {
-      throw new Error('no stocks in this warehouse is found');
-    }
-
-    return rows;
-  } catch (error: any) {
-    console.log('find_stocks_from_warehouse', error);
-
-    return error;
+  const [rows] = await pool.query<RowDataPacket[]>(
+    `SELECT warehouses.id AS warehouse_id, warehouses.name AS warehouse_name, warehouses.address AS warehouse_address, stocks.id, stocks.name, stocks.supplier, stocks.quantity, stocks.cost_price, stocks.purchase_date, stocks.stock_due_date, stocks.created_at, stocks.updated_at FROM warehouses JOIN stocks ON stocks.warehouse_id = warehouses.id WHERE warehouses.id = ? AND warehouses.user_id = ?`,
+    [warehouse_id, userId],
+  );
+  if (!rows.length) {
+    throw new Error('no stocks in this warehouse is found');
   }
+
+  return rows;
 }
 
 export async function deleteWarehouseById(id: number, userId: number) {
