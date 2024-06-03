@@ -110,7 +110,7 @@ export async function getStocksFromWarehouse(
           name: warehouse.name,
           address: warehouse.address,
         },
-        stock: stocksFromWarehouse.map((stocks) => {
+        stocks: stocksFromWarehouse.map((stocks) => {
           return {
             id: stocks.id,
             name: stocks.name,
