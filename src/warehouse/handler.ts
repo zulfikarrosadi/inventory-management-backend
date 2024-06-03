@@ -127,7 +127,15 @@ export async function getStocksFromWarehouse(
     });
   } catch (error: any) {
     console.log('get_stocks_from_warehouse', error);
-
+    if (error.sqlState === '42S522') {
+      return res.status(400).json({
+        status: 'fail',
+        errors: {
+          code: 400,
+          message: 'fail to retrive stocks information, please try again',
+        },
+      });
+    }
     return res
       .status(404)
       .json({ status: 'fail', errors: { code: 404, message: error.message } });
