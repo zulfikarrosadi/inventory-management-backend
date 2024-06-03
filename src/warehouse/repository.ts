@@ -98,3 +98,15 @@ export async function deleteWarehouseById(id: number, userId: number) {
   }
   return true;
 }
+
+export async function findStocksFromAllWarehouses(userId: number) {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    'SELECT warehouses.id AS warehouse_id, warehouses.name AS warehouse_name, warehouses.address AS warehouse_address, stocks.id, stocks.name, stocks.supplier, stocks.quantity, stocks.cost_price, stocks.purchase_date, stocks.stock_due_date, stocks.created_at, stocks.updated_at FROM warehouses JOIN stocks ON stocks.warehouse_id = warehouses.id WHERE warehouses.user_id = ?',
+    [userId],
+  );
+  if (!rows.length) {
+    throw new Error('no warehouse and stocks found');
+  }
+  console.log(JSON.stringify(rows));
+  return rows;
+}
