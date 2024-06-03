@@ -4,11 +4,12 @@ import pool from '../db';
 
 export async function saveWarehouse(
   data: CreateWarehouse,
+  userId: number,
 ): Promise<ResultSetHeader | Error> {
   try {
     const [rows] = await pool.execute(
-      'INSERT INTO warehouses (name, address) VALUES (?,?)',
-      [data.name, data.address],
+      'INSERT INTO warehouses (name, address, user_id) VALUES (?,?,?)',
+      [data.name, data.address, userId],
     );
 
     return rows as unknown as ResultSetHeader;
