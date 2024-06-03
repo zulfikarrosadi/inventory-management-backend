@@ -107,6 +107,5 @@ export async function findStocksFromAllWarehouses(userId: number) {
   if (!rows.length) {
     throw new Error('no warehouse and stocks found');
   }
-  console.log(JSON.stringify(rows));
   return rows;
 }
