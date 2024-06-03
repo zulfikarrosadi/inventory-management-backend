@@ -15,7 +15,7 @@ export async function createWarehouse(
   res: Response<ApiResponse, CurrentUser>,
 ) {
   try {
-    const result = await saveWarehouse(req.body);
+    const result = await saveWarehouse(req.body, res.locals.user.userId);
     if (result instanceof Error) {
       throw new Error(result.message);
     }
