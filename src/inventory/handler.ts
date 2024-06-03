@@ -99,34 +99,41 @@ export async function updateStock(
 ) {
   try {
     const id = parseInt(req.params.id, 10);
-    const result = await updateStockById(id, {
+    const updatedStock = await updateStockById(id, {
       ...req.body,
       purchase_date: new Date(req.body.purchase_date).getTime(),
       stock_due_date: new Date(req.body.stock_due_date).getTime(),
       updated_at: new Date(req.body.updated_at).getTime(),
     });
 
-    if (result instanceof Error) {
-      throw new Error(result.message);
-    }
-    const updatedStock = await findStockById(id);
     if (updatedStock instanceof Error) {
       throw new Error(updatedStock.message);
     }
-    return res.status(200).json({
+    const result = await findStocksFromWarehouse(
+      req.body.warehouse_id,
+      res.locals.user.userId,
+    );
+
+    return res.status(201).json({
       status: 'success',
       data: {
-        stock: {
-          id: id,
-          name: updatedStock.name,
-          purchase_date: updatedStock.purchase_date,
-          stock_due_date: updatedStock.stock_due_date,
-          supplier: updatedStock.supplier,
-          quantity: updatedStock.quantity,
-          cost_price: updatedStock.cost_price,
-          amount: updatedStock.cost_price * updatedStock.quantity,
-          updated_at: updatedStock.updated_at,
+        warehouse: {
+          id: result[0].warehouse_id,
+          name: result[0].warehouse_name,
+          address: result[0].warehouse_address,
         },
+        stocks: result.map((stock) => {
+          return {
+            id: stock.id,
+            name: stock.name,
+            purchase_date: stock.purchase_date,
+            stock_due_date: stock.stock_due_date,
+            supplier: stock.supplier,
+            quantity: stock.quantity,
+            cost_price: stock.cost_price,
+            amount: stock.cost_price * stock.quantity,
+          };
+        }),
       },
     });
   } catch (error: any) {
