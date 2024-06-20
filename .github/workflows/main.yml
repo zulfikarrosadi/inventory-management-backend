@@ -10,9 +10,9 @@ jobs:
     name: Build and deploy Node App
     runs-on: ubuntu-latest
     steps:
-      - name: checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
-      - name: setup node 18
-        uses: bahmutov/npm-install@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
       - name: run test
         run: npm test
