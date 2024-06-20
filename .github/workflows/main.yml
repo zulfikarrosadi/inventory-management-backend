@@ -3,16 +3,28 @@ name: Build and Deploy Node App
 on:
   push:
     branches:
-      - master
+      - dev
 
 jobs:
   build-deploy:
     name: Build and deploy Node App
     runs-on: ubuntu-latest
     steps:
-      - name: checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
-      - name: setup node 18
-        uses: bahmutov/npm-install@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: npm i
+      - name: Cache Node.js modules
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+           ${{ runner.os }}-node-
       - name: run test
         run: npm test
