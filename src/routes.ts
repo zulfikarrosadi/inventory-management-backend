@@ -1,6 +1,5 @@
 import { Express } from 'express';
 import { getUser, registerUser, getCurrentUser } from './user/handler';
-import { login, refreshToken } from './auth/handler';
 import { validateInput } from './middlewares/validateInput';
 import { createUserSchema } from './user/schema';
 import { loginSchema } from './auth/schema';
@@ -22,11 +21,20 @@ import {
   deleteWarehouse,
   getStocksFromAllWarehouses,
 } from './warehouse/handler';
+import AuthRepository from './auth/repository';
+import connection from './db';
+import AuthService from './auth/service';
+import AuthHandler from './auth/handler';
 
 export default function routes(app: Express) {
+  const authRepo = new AuthRepository(connection);
+  const authService = new AuthService(authRepo);
+  const authHandler = new AuthHandler(authService);
+
+  //@ts-ignore
   app.post('/api/register', validateInput(createUserSchema), registerUser);
-  app.post('/api/login', validateInput(loginSchema), login);
-  app.get('/api/refresh', refreshToken);
+  app.post('/api/login', validateInput(loginSchema), authHandler.login);
+  app.get('/api/refresh', authHandler.refreshToken);
 
   app.use(deserializeToken);
   app.use(requiredLogin);
