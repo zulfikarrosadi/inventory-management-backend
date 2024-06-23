@@ -24,7 +24,6 @@ export function verifyToken(token: string): {
   } catch (error: any) {
     console.log('catch the error: ', error);
 
-    console.log(error.message);
     return { decodedData: null };
   }
 }
