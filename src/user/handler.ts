@@ -6,7 +6,7 @@ import {
   accessTokenMaxAge,
   createNewToken,
   refreshTokenMaxAge,
-} from '../utils/token';
+} from '../lib/token';
 import { saveTokenToDb } from '../auth/repository';
 
 export async function registerUser(
