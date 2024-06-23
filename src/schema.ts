@@ -4,10 +4,6 @@ type ApiResponse = {
   errors?: {
     code: number;
     message: string;
-    // details?: {
-    //   message: string;
-    //   path: string;
-    // }[];
     details?: Record<string, string>[];
   };
 };
