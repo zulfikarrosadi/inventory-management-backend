@@ -3,3 +3,9 @@ export class AuthCredentialError extends Error {
     super(message);
   }
 }
+
+export class UsernameAlreadyExistsError extends Error {
+  constructor(message: string = 'this username already exists') {
+    super(message);
+  }
+}
