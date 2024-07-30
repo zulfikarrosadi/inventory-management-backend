@@ -12,3 +12,8 @@ export const createUserSchema = z
     message: 'password and password confirmation is not match',
     path: ['password'],
   });
+
+export type User = Omit<
+  z.TypeOf<typeof createUserSchema>,
+  'passwordConfirmation'
+>;
