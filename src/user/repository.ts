@@ -1,32 +1,32 @@
-import { ResultSetHeader, RowDataPacket } from 'mysql2';
-import pool from '../db';
+import { Pool, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
+import { User } from './schema';
+import { UsernameAlreadyExistsError } from '../lib/Error';
 
-export async function createUser(data: {
-  username: string;
-  password: string;
-}): Promise<ResultSetHeader | Error> {
-  try {
-    const [rows] = await pool.execute(
-      'INSERT INTO users (username, password) VALUES(?, ?)',
-      [data.username, data.password],
-    );
-    return rows as ResultSetHeader;
-  } catch (error: any) {
-    console.log(error);
-    if (error.errno === 1062) {
-      return new Error('this username is already taken');
+class UserRepository {
+  private USER_ALREADY_EXISTS = 1062;
+  constructor(private db: Pool) {}
+
+  async createUser(data: User) {
+    try {
+      const [rows] = await this.db.execute(
+        'INSERT INTO users (username, password) VALUES (?, ?)',
+        [data.username, data.password],
+      );
+      const result = rows as ResultSetHeader;
+
+      return { userId: result.insertId };
+    } catch (error: any) {
+      if (error.errno === this.USER_ALREADY_EXISTS) {
+        throw new UsernameAlreadyExistsError();
+      }
+      throw new Error(error);
     }
-    return error;
   }
-}
 
-export async function getUserById(data: {
-  userId: number;
-}): Promise<{ id: number; username: string } | Error> {
-  try {
-    const [rows] = await pool.query<RowDataPacket[]>(
-      'SELECT id, username from users WHERE id = ?',
-      data.userId,
+  async getUserById(id: number): Promise<{ id: number; username: string }> {
+    const [rows] = await this.db.query<RowDataPacket[]>(
+      'SELECT id, username FROM users WHERE id = ?',
+      [id],
     );
     if (!rows.length) {
       throw new Error('user not found');
@@ -36,8 +36,16 @@ export async function getUserById(data: {
       id: rows[0].id,
       username: rows[0].username,
     };
-  } catch (error: any) {
-    console.log(error);
-    return error;
+  }
+
+  async saveTokenToDb(refreshToken: string, userId: number) {
+    const [rows] = await this.db.execute(
+      'UPDATE users SET refresh_token = ? WHERE id = ?',
+      [refreshToken, userId],
+    );
+    const result = rows as ResultSetHeader;
+    return { affectedRows: result.affectedRows };
   }
 }
+
+export default UserRepository;

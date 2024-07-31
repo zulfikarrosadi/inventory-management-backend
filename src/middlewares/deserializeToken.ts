@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { verifyToken } from '../utils/token';
+import { verifyToken } from '../lib/token';
 
 export async function deserializeToken(
   req: Request,

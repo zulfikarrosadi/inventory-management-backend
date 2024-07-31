@@ -1,16 +1,17 @@
-import { RowDataPacket } from 'mysql2';
-import pool from '../db';
+import { Pool, RowDataPacket } from 'mysql2/promise';
+import { AuthCredentialError } from '../lib/Error';
 
-export async function getUserByUsername(data: {
-  username: string;
-}): Promise<{ id: number; username: string; password: string } | Error> {
-  try {
-    const [rows] = await pool.query<RowDataPacket[]>(
+class AuthRepository {
+  constructor(private db: Pool) {}
+
+  async getUserByUsername(username: string) {
+    const [rows] = await this.db.query<RowDataPacket[]>(
       'SELECT id, username, password from users WHERE username = ?',
-      data.username,
+      [username],
     );
+
     if (!rows.length) {
-      throw new Error('username or password is incorrect');
+      throw new AuthCredentialError();
     }
 
     return {
@@ -18,43 +19,28 @@ export async function getUserByUsername(data: {
       username: rows[0].username,
       password: rows[0].password,
     };
-  } catch (error: any) {
-    console.log(error);
-    return error;
   }
-}
 
-export async function saveTokenToDb(token: string, userId: number) {
-  try {
-    const [rows] = await pool.execute(
+  async saveTokenToDb(token: string, userId: number) {
+    const [rows] = await this.db.execute(
       'UPDATE users SET refresh_token = ? WHERE id = ?',
       [token, userId],
     );
 
-    console.log('save_token_to_db', rows);
-
     return rows;
-  } catch (error: any) {
-    console.log('save_token_to_db', error.message);
-    return error;
   }
-}
 
-export async function getTokenByUserId(
-  userId: number,
-): Promise<string | Error> {
-  try {
-    const [rows] = await pool.query<RowDataPacket[]>(
+  async getTokenByUserId(userId: number) {
+    const [rows] = await this.db.query<RowDataPacket[]>(
       'SELECT refresh_token FROM users WHERE id = ?',
       [userId],
     );
     if (!rows.length) {
-      throw new Error('invalid request');
+      throw new Error('token not found in database');
     }
 
     return rows[0]['refresh_token'] as string;
-  } catch (error: any) {
-    console.log('get_token_by_user_id', error.message);
-    return error;
   }
 }
+
+export default AuthRepository;

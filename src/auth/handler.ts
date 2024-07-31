@@ -1,103 +1,74 @@
 import { Request, Response } from 'express';
 import ApiResponse from '../schema';
-import {
-  getTokenByUserId,
-  getUserByUsername,
-  saveTokenToDb,
-} from './repository';
-import { compare } from 'bcrypt';
-import {
-  accessTokenMaxAge,
-  createNewToken,
-  refreshTokenMaxAge,
-  verifyToken,
-} from '../utils/token';
+import { Login } from './schema';
+import { accessTokenMaxAge, refreshTokenMaxAge } from '../lib/token';
 
-export async function login(
-  req: Request<{ username: string; password: string }>,
-  res: Response<ApiResponse>,
-) {
-  const { username, password } = req.body;
-  try {
-    const user = await getUserByUsername({ username });
-    if (user instanceof Error) {
-      throw new Error(user.message);
+interface AuthService {
+  login(data: Login): Promise<{
+    response: ApiResponse;
+    token?: { accessToken: string; refreshToken: string };
+  }>;
+  refreshToken(token: string): Promise<{
+    response: ApiResponse;
+    token?: string;
+  }>;
+}
+
+class AuthHandler {
+  constructor(private service: AuthService) {}
+
+  login = async (
+    req: Request<{}, {}, { username: string; password: string }>,
+    res: Response,
+  ) => {
+    const { response, token } = await this.service.login({
+      username: req.body.username,
+      password: req.body.password,
+    });
+    if (response.status === 'fail') {
+      return res.status(response.errors!.code).json(response);
     }
 
-    const isPasswordMatch = await compare(password, user.password);
-    if (!isPasswordMatch) {
-      throw new Error('username or password is incorrect');
-    }
-
-    const accessToken = createNewToken({
-      username: user.username,
-      userId: user.id,
-      expiration: accessTokenMaxAge,
-    });
-    const refreshToken = createNewToken({
-      username: user.username,
-      userId: user.id,
-      expiration: refreshTokenMaxAge,
-    });
-    await saveTokenToDb(refreshToken, user.id);
     return res
       .status(200)
-      .cookie('accessToken', accessToken, {
+      .cookie('accessToken', token?.accessToken, {
         secure: true,
         sameSite: 'none',
         httpOnly: true,
         maxAge: accessTokenMaxAge,
       })
-      .cookie('refreshToken', refreshToken, {
+      .cookie('refreshToken', token?.refreshToken, {
         secure: true,
         sameSite: 'none',
         httpOnly: true,
         maxAge: refreshTokenMaxAge,
         path: '/api/refresh',
       })
-      .json({
-        status: 'success',
-        data: {
-          user: {
-            id: user.id,
-            username: user.username,
-          },
-        },
-      });
-  } catch (error: any) {
-    console.log(error);
-    return res
-      .status(400)
-      .json({ status: 'fail', errors: { code: 400, message: error.message } });
-  }
-}
+      .json(response);
+  };
 
-export async function refreshToken(req: Request, res: Response<ApiResponse>) {
-  try {
-    console.log('refresh hit');
-
+  refreshToken = async (req: Request, res: Response<ApiResponse>) => {
     const refreshToken = req.cookies.refreshToken;
+
     if (!refreshToken) {
-      throw new Error('refresh token cookie unavailable');
+      return res
+        .status(400)
+        .json({
+          status: 'fail',
+          errors: {
+            code: 400,
+            message: 'invalid request, refresh token unavailable',
+          },
+        });
     }
-    const { decodedData } = verifyToken(refreshToken);
-    if (!decodedData) {
-      throw new Error('invalid refresh token signature');
+    const { response, token } = await this.service.refreshToken(refreshToken);
+    if (response.status === 'fail') {
+      return res.status(response.errors!.code).json(response);
     }
 
-    const tokenFromDb = await getTokenByUserId(decodedData.userId);
-    if (refreshToken !== tokenFromDb) {
-      throw new Error('refresh token is invalid');
-    }
-
-    const newAccessToken = createNewToken({
-      userId: decodedData.userId,
-      username: decodedData.username,
-      expiration: accessTokenMaxAge,
-    });
     return res
       .status(200)
-      .cookie('accessToken', newAccessToken, {
+      .cookie('accessToken', token, {
         secure: true,
         sameSite: 'none',
         httpOnly: true,
@@ -110,19 +81,8 @@ export async function refreshToken(req: Request, res: Response<ApiResponse>) {
         maxAge: refreshTokenMaxAge,
         path: '/api/refresh',
       })
-      .json({
-        status: 'success',
-        data: {
-          user: {
-            id: decodedData.userId,
-            username: decodedData.username,
-          },
-        },
-      });
-  } catch (error: any) {
-    console.log(error);
-    return res
-      .status(400)
-      .json({ status: 'fail', errors: { code: 400, message: error.message } });
-  }
+      .json(response);
+  };
 }
+
+export default AuthHandler;
