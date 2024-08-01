@@ -5,6 +5,15 @@ on:
     branches:
       - dev
 
+env:
+  DB_HOST: localhost
+  DB_PORT: 3306
+  DB_USER: ${{secrets.DB_USER}}
+  DB_PASSWORD: ''
+  SERVER_PORT: 3000
+  DB_DATABASE: inventory_management
+  TOKEN_SECRET: ${{secrets.TOKEN_SECRET}}
+
 jobs:
   build-deploy:
     name: Build and deploy Node App
@@ -25,6 +34,6 @@ jobs:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-           ${{ runner.os }}-node-
+            ${{ runner.os }}-node-
       - name: run test
         run: npm test
