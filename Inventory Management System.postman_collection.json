@@ -1,8 +1,10 @@
 {
 	"info": {
-		"_postman_id": "10f4a230-be4f-4cc0-887f-653ca7d83c44",
+		"_postman_id": "8378b44d-9056-4eeb-a4f3-294115893b63",
 		"name": "Inventory Management System",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14124784",
+		"_collection_link": "https://dark-meadow-855364.postman.co/workspace/Belajar~41e0fb13-11ad-45d4-9753-7a70a577ec62/collection/14124784-8378b44d-9056-4eeb-a4f3-294115893b63?action=share&source=collection_link&creator=14124784"
 	},
 	"item": [
 		{
@@ -114,12 +116,13 @@
 									"\r",
 									"if (pm.response.code === 201) {\r",
 									"    const result = pm.response.json();\r",
-									"    const warehouses = result.data.warehouse\r",
+									"    const warehouses = result.data.warehouses\r",
 									"    pm.collectionVariables.set('warehouse_id', warehouses[0].id)\r",
 									"    pm.collectionVariables.set('warehouse_id_to_delete', warehouses[warehouses.length - 1].id)\r",
 									"}"
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
@@ -156,7 +159,7 @@
 								"exec": [
 									"if (pm.response.code === 200) {\r",
 									"    const result = pm.response.json();\r",
-									"    const warehouses = result.data.warehouse\r",
+									"    const warehouses = result.data.warehouses\r",
 									"    pm.collectionVariables.set('warehouse_id', warehouses[0].id)\r",
 									"    pm.collectionVariables.set('warehouse_id_to_delete', warehouses[warehouses.length - 1].id)\r",
 									"}\r",
@@ -165,7 +168,8 @@
 									"    pm.response.to.have.status(200);\r",
 									"});"
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
@@ -185,7 +189,7 @@
 					"response": []
 				},
 				{
-					"name": "Stocks From Warehouses",
+					"name": "Stocks From Warehouse",
 					"event": [
 						{
 							"listen": "test",
