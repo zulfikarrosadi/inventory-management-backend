@@ -9,3 +9,9 @@ export class UsernameAlreadyExistsError extends Error {
     super(message);
   }
 }
+
+export class NotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+  }
+}
