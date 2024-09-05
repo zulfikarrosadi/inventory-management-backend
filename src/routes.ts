@@ -12,14 +12,6 @@ import {
 } from './inventory/handler';
 import { createStockSchema, updateStockSchema } from './inventory/schema';
 import { createWarehouseSchema } from './warehouse/schema';
-import {
-  createWarehouse,
-  getWarehouses,
-  getStocksFromWarehouse,
-  updateWarehouse,
-  deleteWarehouse,
-  getStocksFromAllWarehouses,
-} from './warehouse/handler';
 import AuthRepository from './auth/repository';
 import connection from './db';
 import AuthService from './auth/service';
@@ -27,6 +19,9 @@ import AuthHandler from './auth/handler';
 import UserRepository from './user/repository';
 import UserSerivce from './user/service';
 import UserHandler from './user/handler';
+import WarehouseRepository from './warehouse/repository';
+import WarehosueService from './warehouse/service';
+import WarehouseHandler from './warehouse/handler';
 
 export default function routes(app: Express) {
   const authRepo = new AuthRepository(connection);
@@ -36,6 +31,10 @@ export default function routes(app: Express) {
   const userRepo = new UserRepository(connection);
   const userService = new UserSerivce(userRepo);
   const userHandler = new UserHandler(userService);
+
+  const warehosueRepo = new WarehouseRepository(connection);
+  const warehouseService = new WarehosueService(warehosueRepo);
+  const warehouseHandler = new WarehouseHandler(warehouseService);
 
   app.post(
     '/api/register',
@@ -59,11 +58,14 @@ export default function routes(app: Express) {
   app.post(
     '/api/warehouses',
     validateInput(createWarehouseSchema),
-    createWarehouse,
+    warehouseHandler.createWarehouse,
   );
-  app.put('/api/warehouses/:id', updateWarehouse);
-  app.get('/api/warehouses/:id/stocks', getStocksFromWarehouse);
-  app.get('/api/warehouses', getWarehouses);
-  app.delete('/api/warehouses/:id', deleteWarehouse);
-  app.get('/api/warehouses/stocks', getStocksFromAllWarehouses);
+  app.put('/api/warehouses/:id', warehouseHandler.updateWarehouse);
+  app.get('/api/warehouses/:id/stocks', warehouseHandler.getStockFromWarehouse);
+  app.get('/api/warehouses', warehouseHandler.getWarehouses);
+  app.delete('/api/warehouses/:id', warehouseHandler.deleteWarehouse);
+  app.get(
+    '/api/warehouses/stocks',
+    warehouseHandler.getStocksFromAllWarehouses,
+  );
 }
