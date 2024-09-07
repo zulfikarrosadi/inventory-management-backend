@@ -6,10 +6,10 @@ export type Stock = {
   supplier: string;
   quantity: number;
   cost_price: number;
-  purchase_date: string;
-  stock_due_date: string;
-  created_at: string;
-  updated_at: string;
+  purchase_date: number; // in ISO time
+  stock_due_date: number; // in ISO time
+  created_at: number; // in ISO time
+  updated_at: number; // in ISO time
 };
 
 export const createStockSchema = z.object({
