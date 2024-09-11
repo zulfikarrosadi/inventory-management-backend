@@ -27,6 +27,7 @@ import AuthHandler from './auth/handler';
 import UserRepository from './user/repository';
 import UserSerivce from './user/service';
 import UserHandler from './user/handler';
+import sanitizeInput from './middlewares/sanitizeInput';
 
 export default function routes(app: Express) {
   const authRepo = new AuthRepository(connection);
@@ -36,6 +37,8 @@ export default function routes(app: Express) {
   const userRepo = new UserRepository(connection);
   const userService = new UserSerivce(userRepo);
   const userHandler = new UserHandler(userService);
+
+  app.use(sanitizeInput);
 
   app.post(
     '/api/register',
