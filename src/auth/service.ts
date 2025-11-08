@@ -43,6 +43,7 @@ class AuthService extends Auth {
         username: user.username,
         userId: user.id,
       });
+      await this.repository.saveTokenToDb(refreshToken, user.id)
 
       return {
         response: {
