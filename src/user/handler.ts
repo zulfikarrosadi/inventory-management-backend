@@ -12,7 +12,7 @@ interface UserService {
 }
 
 class UserHandler {
-  constructor(public service: UserService) {}
+  constructor(public service: UserService) { }
 
   registerUser = async (
     req: Request<{}, {}, User>,

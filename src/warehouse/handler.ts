@@ -19,7 +19,7 @@ interface WarehouseService {
 }
 
 class WarehouseHandler {
-  constructor(public service: WarehouseService) {}
+  constructor(public service: WarehouseService) { }
 
   createWarehouse = async (
     req: Request<{}, {}, CreateWarehouse>,

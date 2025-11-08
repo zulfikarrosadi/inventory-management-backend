@@ -32,7 +32,7 @@ interface WarehouseRepository {
 }
 
 class WarehosueService {
-  constructor(public repo: WarehouseRepository) {}
+  constructor(public repo: WarehouseRepository) { }
 
   public createWarehouse = async (
     data: CreateWarehouse,

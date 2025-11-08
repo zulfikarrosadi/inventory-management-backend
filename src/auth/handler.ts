@@ -15,7 +15,7 @@ interface AuthService {
 }
 
 class AuthHandler {
-  constructor(private service: AuthService) {}
+  constructor(private service: AuthService) { }
 
   login = async (
     req: Request<{}, {}, { username: string; password: string }>,

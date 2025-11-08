@@ -5,14 +5,14 @@ import { Stock } from '../inventory/schema';
 
 type StockFromWarehouse = Array<
   | {
-      warehouse_id: number;
-      warehouse_name: string;
-      warehouse_address: string;
-    } & Stock
+    warehouse_id: number;
+    warehouse_name: string;
+    warehouse_address: string;
+  } & Stock
 >;
 
 class WarehouseRepository {
-  constructor(private db: Pool) {}
+  constructor(private db: Pool) { }
 
   async saveWarehouse(data: CreateWarehouse, userId: number) {
     const [rows] = await this.db.execute(
@@ -43,7 +43,13 @@ class WarehouseRepository {
 
   async findWarehouses(userId: number) {
     const [rows] = await this.db.query<RowDataPacket[]>(
-      'SELECT warehouses.id, warehouses.name, warehouses.address FROM warehouses JOIN users ON warehouses.user_id = users.id WHERE users.id = ? LIMIT 50',
+      `SELECT
+        warehouses.id,
+        warehouses.name,
+        warehouses.address
+      FROM warehouses
+      JOIN users ON warehouses.user_id = users.id
+      WHERE users.id = ? LIMIT 50`,
       [userId],
     );
     if (!rows.length) {
@@ -61,7 +67,10 @@ class WarehouseRepository {
     data: UpdateWarehouse,
   ) {
     const [rows] = await this.db.execute(
-      'UPDATE warehouses SET name = ?, address = ? WHERE id = ? AND user_id = ?',
+      `UPDATE
+        warehouses SET name = ?,
+        address = ?
+      WHERE id = ? AND user_id = ?`,
       [data.name, data.address, warehouseId, userId],
     );
     const result = rows as ResultSetHeader;
@@ -76,7 +85,23 @@ class WarehouseRepository {
 
   async findStockFromWarehouse(warehouseId: number, userId: number) {
     const [rows] = await this.db.query<RowDataPacket[]>(
-      `SELECT warehouses.id AS warehouse_id, warehouses.name AS warehouse_name, warehouses.address AS warehouse_address, stocks.id, stocks.name, stocks.supplier, stocks.quantity, stocks.cost_price, stocks.purchase_date, stocks.stock_due_date, stocks.created_at, stocks.updated_at FROM warehouses JOIN stocks ON stocks.warehouse_id = warehouses.id WHERE warehouses.id = ? AND warehouses.user_id = ?`,
+      `
+        SELECT
+          warehouses.id AS warehouse_id,
+          warehouses.name AS warehouse_name,
+          warehouses.address AS warehouse_address,
+          stocks.id,
+          stocks.name,
+          stocks.supplier,
+          stocks.quantity,
+          stocks.cost_price,
+          stocks.purchase_date,
+          stocks.stock_due_date,
+          stocks.created_at,
+          stocks.updated_at
+        FROM warehouses
+        JOIN stocks ON stocks.warehouse_id = warehouses.id
+        WHERE warehouses.id = ? AND warehouses.user_id = ?`,
       [warehouseId, userId],
     );
     if (!rows.length) {
