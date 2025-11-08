@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "dev": "npx ts-node-dev --respawn --transpile-only src/index.ts",
-    "test": "jest"
+    "test": "jest",
+    "db:migrate-make": "npx knex migrate:make",
+    "db:migrate-run": "npx knex migrate:latest",
+    "db:migrate-down": "npx knex migrate:rollback"
   },
   "keywords": [],
   "author": "",
@@ -17,7 +20,8 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "jsonwebtoken": "^9.0.2",
-    "mysql2": "^3.11.3",
+    "knex": "^3.1.0",
+    "mysql2": "^3.15.3",
     "nanoid": "^5.1.6",
     "pino": "^10.1.0",
     "xss-filters": "^1.2.7",
