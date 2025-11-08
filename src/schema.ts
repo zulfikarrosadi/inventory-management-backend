@@ -1,12 +1,14 @@
 type ApiResponse = {
-  status: 'success' | 'fail';
-  data?: any;
-  errors?: {
+  status: 'success';
+  data: any;
+} | {
+  status: 'fail';
+  errors: {
     code: number;
     message: string;
     details?: Record<string, string>[];
   };
-};
+}
 
 export type CurrentUser = { user: { userId: number; username: string } };
 
