@@ -4,7 +4,7 @@ import { createUserSchema } from './user/schema';
 import { loginSchema } from './auth/schema';
 import { deserializeToken } from './middlewares/deserializeToken';
 import requiredLogin from './middlewares/requiredLogin';
-import {
+import InventoryHandler, {
   createStock,
   deleteStock,
   getStockById,
@@ -23,6 +23,8 @@ import sanitizeInput from './middlewares/sanitizeInput';
 import WarehouseRepository from './warehouse/repository';
 import WarehosueService from './warehouse/service';
 import WarehouseHandler from './warehouse/handler';
+import InventoryService from './inventory/service';
+import InventoryRepository from './inventory/repository';
 
 export default function routes(app: Express) {
   const authRepo = new AuthRepository(connection);
@@ -36,6 +38,10 @@ export default function routes(app: Express) {
   const warehosueRepo = new WarehouseRepository(connection);
   const warehouseService = new WarehosueService(warehosueRepo);
   const warehouseHandler = new WarehouseHandler(warehouseService);
+
+  const inventoryRepo = new InventoryRepository(connection)
+  const inventoryService = new InventoryService(inventoryRepo, warehosueRepo)
+  const inventoryHandler = new InventoryHandler(inventoryService)
 
   app.use(sanitizeInput);
 
@@ -53,8 +59,8 @@ export default function routes(app: Express) {
   app.get('/api/users', userHandler.getCurrentUser);
   app.get('/api/users/:id', userHandler.getUserById);
 
-  app.post('/api/stocks', validateInput(createStockSchema), createStock);
-  app.get('/api/stocks/:id', getStockById);
+  app.post('/api/stocks', validateInput(createStockSchema), inventoryHandler.createStock);
+  app.get('/api/stocks/:id', inventoryHandler.getStockById);
   app.put('/api/stocks/:id', validateInput(updateStockSchema), updateStock);
   app.delete('/api/stocks/:id', deleteStock);
 
