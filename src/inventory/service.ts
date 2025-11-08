@@ -5,9 +5,9 @@ import { NotFoundError } from '../lib/Error';
 
 interface InventoryRepository {
   saveStock(data: CreateStock): Promise<ResultSetHeader>;
-  findStockById(id: number): Promise<Stock>;
-  updateStockById(data: UpdateStock, id: number): Promise<ResultSetHeader>;
-  deleteStockById(id: number): Promise<ResultSetHeader>;
+  findStockById(id: number): Promise<Stock | Error>;
+  updateStockById(data: UpdateStock, id: number): Promise<ResultSetHeader | Error>;
+  deleteStockById(id: number): Promise<ResultSetHeader | Error>;
 }
 
 interface WarehouseRepo {
@@ -29,7 +29,7 @@ class InventoryService {
   constructor(
     public inventoryRepo: InventoryRepository,
     public warehouseRepo: WarehouseRepo,
-  ) {}
+  ) { }
 
   createStock = async (
     data: CreateStock,
