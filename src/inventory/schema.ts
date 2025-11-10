@@ -31,6 +31,19 @@ export const createStockSchema = z.object({
   warehouse_id: z.number({ required_error: 'warehouse id is required' }),
 });
 
+export const updateStockQuantitySchema = z.object({
+  quantity_changes: z
+    .number({ required_error: 'quantity changes is requred' }),
+  warehouse_id: z.
+    number({ required_error: 'warehouse id is required' }),
+  action: z.enum(['stock_in', 'dispatch', 'transfer', 'adjustment']),
+  created_at: z
+    .string({ required_error: 'created at is required' })
+});
+
+export type UpdateStockQuantity = Omit<
+  z.infer<typeof updateStockQuantitySchema>, 'created_at'> & { created_at: number, stock_id: number }
+
 export const updateStockSchema = z.object({
   name: z
     .string({ required_error: 'name is required' })

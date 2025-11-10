@@ -1,7 +1,7 @@
 import { ResultSetHeader } from 'mysql2';
-import { CreateStock, Stock, UpdateStock } from './schema';
+import { CreateStock, Stock, UpdateStock, UpdateStockQuantity } from './schema';
 import ApiResponse from '../schema';
-import { NotFoundError } from '../lib/Error';
+import { AppError, NotFoundError } from '../lib/Error';
 
 interface InventoryRepository {
   saveStock(data: CreateStock): Promise<ResultSetHeader>;
@@ -113,6 +113,62 @@ class InventoryService {
         },
       };
     }
+  };
+
+  updateStockQuantity = async (
+    data: UpdateStockQuantity,
+    userId: number,
+  ): Promise<ApiResponse> => {
+    try {
+      await this.inventoryRepo.updateStockQuantity(data, userId)
+
+      const result = await this.warehouseRepo.findStockFromWarehouse(
+        data.warehouse_id,
+        userId,
+      );
+
+      return {
+        status: "success",
+        data: {
+          warehouse: {
+            id: result[0].warehouse_id,
+            name: result[0].warehouse_name,
+            address: result[0].warehouse_address,
+          },
+          stocks: result.map((stock) => {
+            return {
+              id: stock.id,
+              name: stock.name,
+              purchase_date: stock.purchase_date,
+              stock_due_date: stock.stock_due_date,
+              supplier: stock.supplier,
+              quantity: stock.quantity,
+              cost_price: stock.cost_price,
+              amount: stock.cost_price * stock.quantity,
+            };
+          }),
+        }
+      }
+    } catch (error) {
+      if (error instanceof AppError) {
+        return {
+          status: "fail",
+          errors: {
+            code: error.code,
+            message: error.message
+          }
+        };
+      }
+
+      return {
+        status: "fail",
+        errors: {
+          code: 500,
+          message: "something went wrong, please try again later"
+        }
+      }
+    }
+
   };
 
   updateStock = async (

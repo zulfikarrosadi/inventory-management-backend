@@ -1,9 +1,12 @@
 import { Pool, ResultSetHeader, RowDataPacket } from "mysql2/promise";
-import { CreateStock, Stock, UpdateStock } from "./schema";
+import { CreateStock, Stock, UpdateStock, UpdateStockQuantity } from "./schema";
 import { AppError, BadRequestError, ConflictError, NotFoundError } from "../lib/Error";
+import { getContext } from "../lib/asyncLocalStorage";
+import { Logger } from "../lib/logger";
 
 class InventoryRepository {
-  constructor(private db: Pool) { }
+  constructor(private db: Pool, private logger: Logger) { }
+
   /**
    * A private helper to translate generic DB errors into specific AppErrors.
    */
@@ -65,6 +68,31 @@ class InventoryRepository {
     } catch (error: any) {
       console.log(error);
       return error;
+    }
+  }
+
+  async updateStockQuantity(data: UpdateStockQuantity, userId: number) {
+    try {
+      const [rows] = await this.db.execute(`
+        INSERT INTO stock_movements
+        (stock_id, warehouse_id, user_id, quantity_changes, action, created_at)
+        VALUES(?,?,?,?,?,?)
+      `,
+        [
+          data.stock_id,
+          data.warehouse_id,
+          userId,
+          data.quantity_changes,
+          data.action,
+          data.created_at
+        ])
+
+      return rows;
+    } catch (error: any) {
+      const context = getContext()
+
+      this.logger('error', error.message, context)
+      this.handleDbError(error);
     }
   }
 
