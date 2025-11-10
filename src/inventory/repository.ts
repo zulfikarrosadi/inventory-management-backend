@@ -120,7 +120,7 @@ class InventoryRepository {
   async updateStockById(
     data: UpdateStock,
     id: number,
-  ): Promise<ResultSetHeader | Error> {
+  ) {
     try {
       const [rows] = await this.db.execute(
         'UPDATE stocks SET name = ?, quantity = ?, cost_price = ?, purchase_date = ?, stock_due_date = ?, updated_at = ? WHERE id = ?',
@@ -151,7 +151,7 @@ class InventoryRepository {
 
   async deleteStockById(
     id: number,
-  ): Promise<ResultSetHeader | Error> {
+  ) {
     try {
       const [rows] = await this.db.execute('DELETE FROM stocks WHERE id = ?', [id]);
       const result = rows as ResultSetHeader;

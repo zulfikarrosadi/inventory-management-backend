@@ -1,4 +1,4 @@
-import { ResultSetHeader } from 'mysql2';
+import { QueryResult, ResultSetHeader } from 'mysql2';
 import { CreateStock, Stock, UpdateStock, UpdateStockQuantity } from './schema';
 import ApiResponse from '../schema';
 import { AppError, NotFoundError } from '../lib/Error';
@@ -8,7 +8,7 @@ interface InventoryRepository {
   findStockById(id: number): Promise<Stock>;
   updateStockById(data: UpdateStock, id: number): Promise<ResultSetHeader>;
   deleteStockById(id: number): Promise<ResultSetHeader>;
-  updateStockQuantity(data: UpdateStockQuantity, userId: number): Promise<ResultSetHeader | Error>;
+  updateStockQuantity(data: UpdateStockQuantity, userId: number): Promise<QueryResult>;
 }
 
 interface WarehouseRepo {
@@ -254,6 +254,39 @@ class InventoryService {
       }
     }
   };
+
+  deleteStockById = async (id: string): Promise<ApiResponse> => {
+    try {
+      const parsedId = parseInt(id, 10)
+      if (isNaN(parsedId)) {
+        throw new NotFoundError("failed to delete, stock not found")
+      }
+
+      await this.inventoryRepo.deleteStockById(parsedId)
+      return {
+        status: "success",
+        data: {}
+      }
+    } catch (error) {
+      if (error instanceof AppError) {
+        return {
+          status: "fail",
+          errors: {
+            code: error.code,
+            message: error.message,
+          }
+        }
+      }
+
+      return {
+        status: "fail",
+        errors: {
+          code: 500,
+          message: "something went wrong, please try again later"
+        }
+      }
+    }
+  }
 }
 
 export default InventoryService;
