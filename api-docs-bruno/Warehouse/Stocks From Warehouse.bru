@@ -22,8 +22,7 @@ script:post-response {
   if(res.getStatus() === 200) {
     const body = res.getBody()
     const stockId = body.data.stocks[body.data.stocks.length - 1].id
-    console.log(stockId)
-    bru.setEnvVar("current_stock_id", stockId)
+    bru.setEnvVar("stock_id", stockId)
   }
 }
 
