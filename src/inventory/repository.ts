@@ -1,8 +1,50 @@
 import { Pool, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { CreateStock, Stock, UpdateStock } from "./schema";
+import { AppError, BadRequestError, ConflictError, NotFoundError } from "../lib/Error";
 
 class InventoryRepository {
   constructor(private db: Pool) { }
+  /**
+   * A private helper to translate generic DB errors into specific AppErrors.
+   */
+  private handleDbError(error: unknown): never {
+    if (error && typeof error === 'object' && 'code' in error) {
+      const dbError = error as { code: string; message: string };
+
+      if (dbError.code === 'ER_NO_REFERENCED_ROW_2') {
+        // Foreign key constraint failed
+        throw new NotFoundError(
+          'A related record (stock, warehouse, or user) was not found.'
+        );
+      }
+
+      if (dbError.code === 'ER_DUP_ENTRY') {
+        // Duplicate key
+        throw new ConflictError(
+          'This action would create a duplicate record.'
+        );
+      }
+
+      if (dbError.code === 'ER_BAD_NULL_ERROR' || dbError.code === 'ER_DATA_TOO_LONG') {
+        // Bad data
+        throw new BadRequestError(`Invalid data: ${dbError.message}`);
+      }
+    }
+
+    // If it's already one of our custom errors, just re-throw it
+    if (error instanceof AppError) {
+      throw error;
+    }
+
+    // For all other unknown errors, throw a generic 500-level error
+    // Also, ensure we're throwing an Error object
+    if (error instanceof Error) {
+      throw new Error(`Database error: ${error.message}`);
+    }
+
+    // Handle cases where the thrown object isn't even an Error
+    throw new Error(`An unknown database error occurred: ${String(error)}`);
+  }
 
   async saveStock(data: CreateStock) {
     try {
@@ -33,7 +75,7 @@ class InventoryRepository {
         [id],
       );
       if (rows.length < 1) {
-        throw new Error('stock not found, enter the correct id and try again');
+        throw new NotFoundError('stock not found, enter the correct id and try again');
       }
 
       return rows[0] as unknown as Stock;
