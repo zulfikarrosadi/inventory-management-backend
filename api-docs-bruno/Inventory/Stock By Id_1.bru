@@ -1,0 +1,25 @@
+meta {
+  name: Stock By Id_1
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{base_url}}/stocks/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: {{current_stock_id}}
+}
+
+script:post-response {
+  test("Status code is 204", function () {
+      expect(res.getStatus()).to.equal(204);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,36 @@
+meta {
+  name: Update Stocks
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{base_url}}/stocks/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: {{current_stock_id}}
+}
+
+body:json {
+  {
+      "name": "{{$randomNoun}}",
+      "quantity": 10,
+      "purchase_date": "{{purchase_date}}",
+      "stock_due_date": "{{$randomDateFuture}}",
+      "supplier": "{{$randomCompanyName}}",
+      "cost_price": 4500,
+      "updated_at": "{{$randomDateRecent}}"
+  }
+}
+
+script:pre-request {
+  const purchase_date_iso = new Date().toISOString()
+  bru.setVar('purchase_date', purchase_date_iso)
+}
+
+settings {
+  encodeUrl: true
+}

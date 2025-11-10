@@ -1,0 +1,33 @@
+meta {
+  name: Stocks From Warehouse
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/warehouses/:id/stocks
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: {{warehouse_id}}
+}
+
+script:post-response {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  if(res.getStatus() === 200) {
+    const body = res.getBody()
+    const stockId = body.data.stocks[body.data.stocks.length - 1].id
+    console.log(stockId)
+    bru.setEnvVar("current_stock_id", stockId)
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Update Warehouse
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{base_url}}/warehouses/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: {{warehouse_id}}
+}
+
+body:json {
+  {
+      "name": "{{$randomCompanyName}}",
+      "address": "{{$randomStreetAddress}}"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

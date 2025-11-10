@@ -1,0 +1,40 @@
+meta {
+  name: Create Stock
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/stocks
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "{{$randomNoun}}",
+      "quantity": 10,
+      "purchase_date": "{{$randomDateRecent}}",
+      "stock_due_date": "{{$randomDateFuture}}",
+      "supplier": "{{$randomCompanyName}}",
+      "cost_price": 4500,
+      "created_at": "{{$randomDateRecent}}",
+      "warehouse_id": {{warehouse_id}}
+  }
+}
+
+script:post-response {
+  if(res.getStatus() === 201) {
+      const result = res.getBody()
+      bru.setVar("current_stock_id", result.data.stocks.id)
+  }
+  
+  test('should return 201 status code', function() {
+      expect(res.getStatus()).to.equal(201)
+  })
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,35 @@
+meta {
+  name: Register
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/register
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "username": "{{$randomUserName}}",
+      "password": "{{password}}",
+      "passwordConfirmation": "{{password}}"
+  }
+}
+
+script:post-response {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  if(res.getStatus() === 201) {
+      const result = res.getBody();
+      bru.setVar("current_username", result.data.user.username);
+      bru.setVar("current_user_id", result.data.user.id);
+  }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,36 @@
+meta {
+  name: Create Warehouse
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/warehouses
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "{{$randomCompanyName}}",
+      "address": "{{$randomStreetAddress}}"
+  }
+}
+
+script:post-response {
+  test("Status code is 201", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  if (res.getStatus() === 201) {
+      const result = res.getBody();
+      const warehouses = result.data.warehouses
+      bru.setEnvVar('warehouse_id', warehouses[0].id)
+      bru.setEnvVar('warehouse_id_to_delete', warehouses[warehouses.length - 1].id)
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

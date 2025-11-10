@@ -1,0 +1,25 @@
+meta {
+  name: Warehouse
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{base_url}}/warehouses/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: {{warehouse_id_to_delete}}
+}
+
+script:post-response {
+  test("Status code is 204", function () {
+      expect(res.getStatus()).to.equal(204);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

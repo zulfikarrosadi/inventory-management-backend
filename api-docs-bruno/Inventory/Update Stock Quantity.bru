@@ -1,0 +1,29 @@
+meta {
+  name: Update Stock Quantity
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{base_url}}/stocks/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: {{current_stock_id}}
+}
+
+body:json {
+  {
+    "quantity_changes": 1,
+    "warehouse_id": {{warehouse_id}},
+    "action": "stock_in",
+    "created_at": "{{$randomDateRecent}}"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
