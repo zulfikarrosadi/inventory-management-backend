@@ -4,11 +4,7 @@ import { createUserSchema } from './user/schema';
 import { loginSchema } from './auth/schema';
 import { deserializeToken } from './middlewares/deserializeToken';
 import requiredLogin from './middlewares/requiredLogin';
-import InventoryHandler, {
-  deleteStock,
-  updateStock,
-} from './inventory/handler';
-import { createStockSchema, updateStockSchema } from './inventory/schema';
+import { createStockSchema, updateStockQuantitySchema, updateStockSchema } from './inventory/schema';
 import { createWarehouseSchema } from './warehouse/schema';
 import AuthRepository from './auth/repository';
 import connection from './db';
@@ -23,8 +19,12 @@ import WarehosueService from './warehouse/service';
 import WarehouseHandler from './warehouse/handler';
 import InventoryService from './inventory/service';
 import InventoryRepository from './inventory/repository';
+import InventoryHandler from './inventory/handler';
 import { logRequest } from './middlewares/logger';
 import { requestId } from './middlewares/requestId';
+import { logger } from './lib/logger';
+import { setContext } from './middlewares/context';
+import { catchAllError } from './middlewares/catchError';
 
 export default function routes(app: Express) {
   const authRepo = new AuthRepository(connection);
@@ -39,13 +39,14 @@ export default function routes(app: Express) {
   const warehouseService = new WarehosueService(warehosueRepo);
   const warehouseHandler = new WarehouseHandler(warehouseService);
 
-  const inventoryRepo = new InventoryRepository(connection)
+  const inventoryRepo = new InventoryRepository(connection, logger)
   const inventoryService = new InventoryService(inventoryRepo, warehosueRepo)
   const inventoryHandler = new InventoryHandler(inventoryService)
 
   app.use(sanitizeInput);
 
   app.use(requestId)
+  app.use(setContext)
   app.use(logRequest)
   app.post(
     '/api/register',
@@ -63,8 +64,9 @@ export default function routes(app: Express) {
 
   app.post('/api/stocks', validateInput(createStockSchema), inventoryHandler.createStock);
   app.get('/api/stocks/:id', inventoryHandler.getStockById);
-  // app.put('/api/stocks/:id', validateInput(updateStockSchema), updateStock);
-  app.delete('/api/stocks/:id', deleteStock);
+  app.put('/api/stocks/:id', validateInput(updateStockSchema), inventoryHandler.updateStock);
+  app.delete('/api/stocks/:id', inventoryHandler.deleteStock);
+  app.patch('/api/stocks/:id', validateInput(updateStockQuantitySchema), inventoryHandler.updateStockQuantity)
 
   app.post(
     '/api/warehouses',
@@ -79,4 +81,6 @@ export default function routes(app: Express) {
     '/api/warehouses/stocks',
     warehouseHandler.getStocksFromAllWarehouses,
   );
+
+  app.use(catchAllError)
 }
