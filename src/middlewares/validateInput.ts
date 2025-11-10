@@ -1,9 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
 import { AnyZodObject } from 'zod';
 import ApiResponse from '../schema';
+import { getContext } from '../lib/asyncLocalStorage';
+import { logger } from '../lib/logger';
 
 export function validateInput(schema: AnyZodObject) {
-  return async function (
+  return async function(
     req: Request,
     res: Response<ApiResponse>,
     next: NextFunction,
@@ -12,6 +14,8 @@ export function validateInput(schema: AnyZodObject) {
       schema.parse(req.body);
       return next();
     } catch (error: any) {
+      const context = getContext()
+      logger('warn', 'invalid request input', context, error)
       return res.status(400).send({
         status: 'fail',
         errors: {

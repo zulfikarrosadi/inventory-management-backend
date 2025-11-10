@@ -14,8 +14,8 @@ const pinoConfig = pino({
 })
 
 
-type LogContext = {
-  requestId?: string;
+export type LogContext = {
+  req_id: string;
   userId?: number;
 }
 
@@ -23,26 +23,38 @@ export type RequestContext = {
   path: string;
   method: string;
   status: number | undefined;
-  id: string;
   ip: string | undefined;
 }
 
-export function logger(level: Level, message: string, context?: LogContext, reqContext?: RequestContext) {
-
-  // for logging middleware
-  if (reqContext) {
-    pinoConfig['info']({ message, request: reqContext })
-    return
-  }
-
+export function logger(
+  level: Level,
+  message: string,
+  context?: LogContext,
+  error?: any,
+  reqContext?: RequestContext
+) {
   if (!context) {
     pinoConfig[level]({ message })
     return
   }
 
-  pinoConfig[level]({ message, context })
+  // for logging middleware
+  if (reqContext) {
+    pinoConfig['info'](
+      { message, req_id: context.req_id, request: reqContext }
+    )
+    return
+  }
+
+  pinoConfig[level]({ message, req_id: context.req_id, error })
   return
 }
 
-export type Logger = (level: Level, message: string, context: LogContext) => void
+export type Logger = (
+  level: Level,
+  message: string,
+  context?: LogContext,
+  error?: any,
+  requestContext?: RequestContext
+) => void
 

@@ -1,18 +1,19 @@
 import { NextFunction, Request, Response } from "express";
-import { logger, RequestContext } from '../lib/logger'
+import { RequestContext, logger } from "../lib/logger";
+import { getContext } from "../lib/asyncLocalStorage";
 
 export async function logRequest(req: Request, res: Response, next: NextFunction) {
-  const ctx: RequestContext = {
+  const reqContext: RequestContext = {
     method: req.method,
     path: req.path,
-    id: res.locals.requestId,
     ip: req.ip,
     status: undefined,
   }
+  const context = getContext()
 
   res.on('finish', () => {
-    ctx.status = res.statusCode
-    logger('info', 'REQUEST_INFO', undefined, ctx)
+    reqContext.status = res.statusCode
+    logger('info', 'REQUEST_INFO', context, undefined, reqContext)
   })
 
   next()

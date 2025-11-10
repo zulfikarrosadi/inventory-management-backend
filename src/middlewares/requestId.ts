@@ -3,7 +3,7 @@ import { nanoid } from "nanoid";
 
 export function requestId(_: Request, res: Response, next: NextFunction) {
   const id = nanoid()
-  res.locals.requestId = id
+  res.locals.req_id = id
   next()
 }
 

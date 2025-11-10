@@ -1,6 +1,9 @@
 declare namespace Express {
   interface Locals {
-    requestId: string
+    req_id: string
+    user: {
+      userId: number;
+    }
   }
 }
 
