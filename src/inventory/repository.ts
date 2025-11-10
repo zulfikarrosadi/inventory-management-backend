@@ -66,8 +66,10 @@ class InventoryRepository {
       );
       return rows as ResultSetHeader;
     } catch (error: any) {
-      console.log(error);
-      return error;
+      const context = getContext()
+
+      this.logger('error', error.message, context)
+      this.handleDbError(error);
     }
   }
 
@@ -96,7 +98,7 @@ class InventoryRepository {
     }
   }
 
-  async findStockById(id: number): Promise<Stock | Error> {
+  async findStockById(id: number): Promise<Stock> {
     try {
       const [rows] = await this.db.query<RowDataPacket[]>(
         'SELECT id, name, supplier, quantity, cost_price, purchase_date, stock_due_date, created_at, updated_at FROM stocks WHERE id = ?',
@@ -108,9 +110,13 @@ class InventoryRepository {
 
       return rows[0] as unknown as Stock;
     } catch (error: any) {
-      return error;
+      const context = getContext()
+
+      this.logger('error', error.message, context)
+      this.handleDbError(error);
     }
   }
+
   async updateStockById(
     data: UpdateStock,
     id: number,
@@ -130,13 +136,16 @@ class InventoryRepository {
       );
       const result = rows as ResultSetHeader;
       if (result.affectedRows === 0) {
-        throw new Error(
+        throw new NotFoundError(
           'updating stock failed, make sure you enter all column correctly and try again',
         );
       }
       return rows as ResultSetHeader;
     } catch (error: any) {
-      return error;
+      const context = getContext()
+
+      this.logger('error', error.message, context)
+      this.handleDbError(error);
     }
   }
 
@@ -148,13 +157,16 @@ class InventoryRepository {
       const result = rows as ResultSetHeader;
 
       if (result.affectedRows === 0) {
-        throw new Error(
+        throw new NotFoundError(
           'failed to delete stock, enter the correct stock id and try again',
         );
       }
       return result;
     } catch (error: any) {
-      return error;
+      const context = getContext()
+
+      this.logger('error', error.message, context)
+      this.handleDbError(error);
     }
   }
 }
