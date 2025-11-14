@@ -74,6 +74,18 @@ export default function routes(app: Express) {
   app.get("/api/users", userHandler.getCurrentUser);
   app.get("/api/users/:id", userHandler.getUserById);
 
+  app.post(
+    "/api/organizations",
+    validateInput(createOrgSchema),
+    orgHandler.create,
+  );
+  app.get("/api/organizations/:id", orgHandler.findById);
+  app.put(
+    "/api/organizations/:id",
+    validateInput(updateOrgSchema),
+    orgHandler.updateById,
+  );
+  app.delete("/api/organizations/:id", orgHandler.deleteById);
 
   app.post(
     "/api/stocks",
