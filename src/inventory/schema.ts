@@ -19,9 +19,6 @@ export const createStockSchema = z.object({
   supplier: z
     .string({ required_error: 'supplier is required' })
     .min(1, 'supplier is required'),
-  quantity: z
-    .number({ required_error: 'total is required' })
-    .min(1, 'total stock is required'),
   cost_price: z
     .number({ required_error: 'cost price is required' })
     .min(1, 'cost price is required'),
@@ -51,9 +48,6 @@ export const updateStockSchema = z.object({
   supplier: z
     .string({ required_error: 'supplier is required' })
     .min(1, 'supplier is required'),
-  quantity: z
-    .number({ required_error: 'total is required' })
-    .min(1, 'total stock is required'),
   cost_price: z
     .number({ required_error: 'cost price is required' })
     .min(1, 'cost price is required'),

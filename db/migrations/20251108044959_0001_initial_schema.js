@@ -2,8 +2,8 @@
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.up = function(knex) {
-	return knex.raw(`
+exports.up = (knex) =>
+  knex.raw(`
 DROP TABLE IF EXISTS \`users\`;
 CREATE TABLE \`users\` (
   \`id\` int(11) NOT NULL AUTO_INCREMENT,
@@ -41,17 +41,15 @@ CREATE TABLE \`stocks\` (
   CONSTRAINT \`stocks_ibfk_1\` FOREIGN KEY (\`warehouse_id\`) REFERENCES \`warehouses\` (\`id\`)
 ) ENGINE=InnoDB AUTO_INCREMENT=106 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-`)
-};
+`);
 
 /**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.down = function(knex) {
-	return knex.raw(`
+exports.down = (knex) =>
+  knex.raw(`
     DROP TABLE IF EXISTS \`warehouses\`;
     DROP TABLE IF EXISTS \`stocks\`;
     DROP TABLE IF EXISTS \`users\`;
-`)
-};
+`);

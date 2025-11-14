@@ -1,34 +1,48 @@
-import { Pool, ResultSetHeader, RowDataPacket } from "mysql2/promise";
-import { CreateStock, Stock, UpdateStock, UpdateStockQuantity } from "./schema";
-import { AppError, BadRequestError, ConflictError, NotFoundError } from "../lib/Error";
+import type { Pool, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { getContext } from "../lib/asyncLocalStorage";
-import { Logger } from "../lib/logger";
+import {
+  AppError,
+  BadRequestError,
+  ConflictError,
+  NotFoundError,
+} from "../lib/Error";
+import type { Logger } from "../lib/logger";
+import type {
+  CreateStock,
+  Stock,
+  UpdateStock,
+  UpdateStockQuantity,
+} from "./schema";
 
 class InventoryRepository {
-  constructor(private db: Pool, private logger: Logger) { }
+  constructor(
+    private db: Pool,
+    private logger: Logger,
+  ) { }
 
   /**
    * A private helper to translate generic DB errors into specific AppErrors.
    */
   private handleDbError(error: unknown): never {
-    if (error && typeof error === 'object' && 'code' in error) {
+    if (error && typeof error === "object" && "code" in error) {
       const dbError = error as { code: string; message: string };
 
-      if (dbError.code === 'ER_NO_REFERENCED_ROW_2') {
+      if (dbError.code === "ER_NO_REFERENCED_ROW_2") {
         // Foreign key constraint failed
         throw new NotFoundError(
-          'A related record (stock, warehouse, or user) was not found.'
+          "A related record (stock, warehouse, or user) was not found.",
         );
       }
 
-      if (dbError.code === 'ER_DUP_ENTRY') {
+      if (dbError.code === "ER_DUP_ENTRY") {
         // Duplicate key
-        throw new ConflictError(
-          'This action would create a duplicate record.'
-        );
+        throw new ConflictError("This action would create a duplicate record.");
       }
 
-      if (dbError.code === 'ER_BAD_NULL_ERROR' || dbError.code === 'ER_DATA_TOO_LONG') {
+      if (
+        dbError.code === "ER_BAD_NULL_ERROR" ||
+        dbError.code === "ER_DATA_TOO_LONG"
+      ) {
         // Bad data
         throw new BadRequestError(`Invalid data: ${dbError.message}`);
       }
@@ -52,11 +66,10 @@ class InventoryRepository {
   async saveStock(data: CreateStock) {
     try {
       const [rows] = await this.db.execute(
-        'INSERT INTO stocks (name, supplier, quantity, cost_price, purchase_date, stock_due_date, created_at, warehouse_id) VALUES (?,?,?,?,?,?,?,?)',
+        "INSERT INTO stocks (name, supplier, cost_price, purchase_date, stock_due_date, created_at, warehouse_id) VALUES (?,?,?,?,?,?,?)",
         [
           data.name,
           data.supplier,
-          data.quantity,
           data.cost_price,
           data.purchase_date,
           data.stock_due_date,
@@ -66,16 +79,17 @@ class InventoryRepository {
       );
       return rows as ResultSetHeader;
     } catch (error: any) {
-      const context = getContext()
+      const context = getContext();
 
-      this.logger('error', error.message, context)
+      this.logger("error", error.message, context);
       this.handleDbError(error);
     }
   }
 
   async updateStockQuantity(data: UpdateStockQuantity, userId: number) {
     try {
-      const [rows] = await this.db.execute(`
+      const [rows] = await this.db.execute(
+        `
         INSERT INTO stock_movements
         (stock_id, warehouse_id, user_id, quantity_changes, action, created_at)
         VALUES(?,?,?,?,?,?)
@@ -86,14 +100,15 @@ class InventoryRepository {
           userId,
           data.quantity_changes,
           data.action,
-          data.created_at
-        ])
+          data.created_at,
+        ],
+      );
 
       return rows;
     } catch (error: any) {
-      const context = getContext()
+      const context = getContext();
 
-      this.logger('error', error.message, context)
+      this.logger("error", error.message, context);
       this.handleDbError(error);
     }
   }
@@ -101,32 +116,46 @@ class InventoryRepository {
   async findStockById(id: number): Promise<Stock> {
     try {
       const [rows] = await this.db.query<RowDataPacket[]>(
-        'SELECT id, name, supplier, quantity, cost_price, purchase_date, stock_due_date, created_at, updated_at FROM stocks WHERE id = ?',
+        `
+        SELECT
+          s.id AS id,
+          s.name AS name,
+          s.supplier AS supplier,
+          SUM(sm.quantity_changes) AS quantity,
+          s.cost_price AS cost_price,
+          s.purchase_date AS purchase_date,
+          s.stock_due_date AS stock_due_date,
+          s.created_at AS created_at,
+          s.updated_at AS updated_at
+        FROM stock_movements sm
+        JOIN stocks s
+          ON sm.stock_id = s.id
+        WHERE s.id = ?
+        GROUP BY sm.stock_id
+      `,
         [id],
       );
       if (rows.length < 1) {
-        throw new NotFoundError('stock not found, enter the correct id and try again');
+        throw new NotFoundError(
+          "stock not found, enter the correct id and try again",
+        );
       }
 
       return rows[0] as unknown as Stock;
     } catch (error: any) {
-      const context = getContext()
+      const context = getContext();
 
-      this.logger('error', error.message, context)
+      this.logger("error", error.message, context);
       this.handleDbError(error);
     }
   }
 
-  async updateStockById(
-    data: UpdateStock,
-    id: number,
-  ) {
+  async updateStockById(data: UpdateStock, id: number) {
     try {
       const [rows] = await this.db.execute(
-        'UPDATE stocks SET name = ?, quantity = ?, cost_price = ?, purchase_date = ?, stock_due_date = ?, updated_at = ? WHERE id = ?',
+        "UPDATE stocks SET name = ?, cost_price = ?, purchase_date = ?, stock_due_date = ?, updated_at = ? WHERE id = ?",
         [
           data.name,
-          data.quantity,
           data.cost_price,
           data.purchase_date,
           data.stock_due_date,
@@ -137,35 +166,35 @@ class InventoryRepository {
       const result = rows as ResultSetHeader;
       if (result.affectedRows === 0) {
         throw new NotFoundError(
-          'updating stock failed, make sure you enter all column correctly and try again',
+          "updating stock failed, make sure you enter all column correctly and try again",
         );
       }
       return rows as ResultSetHeader;
     } catch (error: any) {
-      const context = getContext()
+      const context = getContext();
 
-      this.logger('error', error.message, context)
+      this.logger("error", error.message, context);
       this.handleDbError(error);
     }
   }
 
-  async deleteStockById(
-    id: number,
-  ) {
+  async deleteStockById(id: number) {
     try {
-      const [rows] = await this.db.execute('DELETE FROM stocks WHERE id = ?', [id]);
+      const [rows] = await this.db.execute("DELETE FROM stocks WHERE id = ?", [
+        id,
+      ]);
       const result = rows as ResultSetHeader;
 
       if (result.affectedRows === 0) {
         throw new NotFoundError(
-          'failed to delete stock, enter the correct stock id and try again',
+          "failed to delete stock, enter the correct stock id and try again",
         );
       }
       return result;
     } catch (error: any) {
-      const context = getContext()
+      const context = getContext();
 
-      this.logger('error', error.message, context)
+      this.logger("error", error.message, context);
       this.handleDbError(error);
     }
   }
