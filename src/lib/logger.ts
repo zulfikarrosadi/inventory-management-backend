@@ -1,4 +1,4 @@
-import pino, { Level } from "pino";
+import pino, { type Level } from "pino";
 import "dotenv/config";
 
 const logLevel: Level =
@@ -30,19 +30,18 @@ export function logger(
   level: Level,
   message: string,
   context?: LogContext,
-  error?: any,
+  error?: unknown | undefined,
   reqContext?: RequestContext,
 ) {
   if (!context) {
-    pinoConfig[level]({ message });
+    pinoConfig[level]({ message, error });
     return;
   }
-
   // for logging middleware
   if (reqContext) {
-    pinoConfig["info"]({
+    pinoConfig.info({
       message,
-      req_id: context.req_id,
+      req_id: context.req_id || null,
       request: reqContext,
     });
     return;
@@ -56,6 +55,6 @@ export type Logger = (
   level: Level,
   message: string,
   context?: LogContext,
-  error?: any,
+  error?: unknown | undefined,
   requestContext?: RequestContext,
 ) => void;
