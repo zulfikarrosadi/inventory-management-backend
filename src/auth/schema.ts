@@ -1,12 +1,17 @@
-import { z } from 'zod';
+import { z } from "zod";
+
+export type LoginResult = {
+  id: number;
+  email: string;
+};
 
 export const loginSchema = z.object({
-  username: z
-    .string({ required_error: 'username is required' })
-    .min(1, 'username is required'),
+  email: z
+    .string({ required_error: "email is required" })
+    .min(1, "email is required"),
   password: z
-    .string({ required_error: 'password is required' })
-    .min(1, 'password is required'),
+    .string({ required_error: "password is required" })
+    .min(1, "password is required"),
 });
 
 export type Login = z.TypeOf<typeof loginSchema>;

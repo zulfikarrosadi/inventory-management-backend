@@ -1,13 +1,13 @@
-import { Pool, RowDataPacket } from 'mysql2/promise';
-import { AuthCredentialError } from '../lib/Error';
+import type { Pool, RowDataPacket } from "mysql2/promise";
+import { AuthCredentialError } from "../lib/Error";
 
 class AuthRepository {
-  constructor(private db: Pool) {}
+  constructor(private db: Pool) { }
 
-  async getUserByUsername(username: string) {
+  async getUserByEmail(email: string) {
     const [rows] = await this.db.query<RowDataPacket[]>(
-      'SELECT id, username, password from users WHERE username = ?',
-      [username],
+      "SELECT id, email, password from users WHERE email = ?",
+      [email],
     );
 
     if (!rows.length) {
@@ -16,14 +16,14 @@ class AuthRepository {
 
     return {
       id: rows[0].id,
-      username: rows[0].username,
+      email: rows[0].email,
       password: rows[0].password,
     };
   }
 
   async saveTokenToDb(token: string, userId: number) {
     const [rows] = await this.db.execute(
-      'UPDATE users SET refresh_token = ? WHERE id = ?',
+      "UPDATE users SET refresh_token = ? WHERE id = ?",
       [token, userId],
     );
 
@@ -32,14 +32,14 @@ class AuthRepository {
 
   async getTokenByUserId(userId: number) {
     const [rows] = await this.db.query<RowDataPacket[]>(
-      'SELECT refresh_token FROM users WHERE id = ?',
+      "SELECT refresh_token FROM users WHERE id = ?",
       [userId],
     );
     if (!rows.length) {
-      throw new Error('token not found in database');
+      throw new Error("token not found in database");
     }
 
-    return rows[0]['refresh_token'] as string;
+    return rows[0].refresh_token as string;
   }
 }
 

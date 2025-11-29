@@ -1,16 +1,20 @@
-import AuthRepository from './repository';
-import AuthService from './service';
-import { AuthCredentialError } from '../lib/Error';
-import { hashSync } from 'bcrypt';
-import { createNewToken, refreshTokenMaxAge, verifyToken } from '../lib/token';
+import path from "node:path";
+import { hashSync } from "bcrypt";
+import dotenv from "dotenv";
+import { AuthCredentialError } from "../lib/Error";
+import { createNewToken, refreshTokenMaxAge, verifyToken } from "../lib/token";
+import type AuthRepository from "./repository";
+import AuthService from "./service";
 
-describe('auth service', () => {
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+
+describe("auth service", () => {
   let authRepo: jest.Mocked<AuthRepository>;
   let authService: AuthService;
 
   beforeEach(() => {
     authRepo = {
-      getUserByUsername: jest.fn(),
+      getUserByEmail: jest.fn(),
       saveTokenToDb: jest.fn(),
       getTokenByUserId: jest.fn(),
     } as unknown as jest.Mocked<AuthRepository>;
@@ -18,127 +22,135 @@ describe('auth service', () => {
     authService = new AuthService(authRepo);
   });
 
-  describe('login', () => {
-    it('should fail caused none existent user', async () => {
-      authRepo.getUserByUsername.mockRejectedValue(new AuthCredentialError());
+  describe("login", () => {
+    it("should fail caused none existent user", async () => {
+      authRepo.getUserByEmail.mockRejectedValue(new AuthCredentialError());
 
       const result = await authService.login({
-        username: 'nonexistent',
-        password: 'password',
+        email: "nonexistent",
+        password: "password",
       });
-      expect(result.response.status).toBe('fail');
+      expect(result.response.status).toBe("fail");
     });
 
-    it('should fail caused wrong password', async () => {
-      authRepo.getUserByUsername.mockResolvedValue({
+    it("should fail caused wrong password", async () => {
+      authRepo.getUserByEmail.mockResolvedValue({
         id: 1,
-        username: 'testing_username',
-        password: hashSync('password', 10),
+        email: "testing@mail.com",
+        password: hashSync("password", 10),
       });
 
       const result = await authService.login({
-        username: 'testing_username',
-        password: 'wrongpassword',
+        email: "testing@mail.com",
+        password: "wrongpassword",
       });
 
-      expect(authRepo.getUserByUsername).toHaveBeenCalled();
-      expect(authRepo.getUserByUsername).toHaveBeenCalledWith(
-        'testing_username',
-      );
+      expect(authRepo.getUserByEmail).toHaveBeenCalled();
+      expect(authRepo.getUserByEmail).toHaveBeenCalledWith("testing@mail.com");
       expect(result.response).toEqual({
-        status: 'fail',
-        errors: { code: 400, message: 'username or password is incorrect' },
+        status: "fail",
+        errors: { code: 401, message: "email or password is incorrect" },
       });
     });
 
-    it('should success', async () => {
-      authRepo.getUserByUsername.mockResolvedValue({
+    it("should success", async () => {
+      authRepo.getUserByEmail.mockResolvedValue({
         id: 1,
-        username: 'testing_username',
-        password: hashSync('password', 10),
+        email: "test@email.com",
+        password: hashSync("password", 10),
       });
 
       const result = await authService.login({
-        username: 'testing_username',
-        password: 'password',
+        email: "test@email.com",
+        password: "password",
       });
 
-      expect(authRepo.getUserByUsername).toHaveBeenCalled();
-      expect(authRepo.getUserByUsername).toHaveBeenCalledWith(
-        'testing_username',
-      );
-      expect(result).toHaveProperty('response');
-      expect(result).toHaveProperty('token');
+      expect(authRepo.getUserByEmail).toHaveBeenCalled();
+      expect(authRepo.getUserByEmail).toHaveBeenCalledWith("test@email.com");
+      expect(result).toHaveProperty("response");
+      expect(result).toHaveProperty("token");
       expect(result.response).toEqual({
-        status: 'success',
-        data: { user: { id: 1, username: 'testing_username' } },
+        status: "success",
+        data: { user: { id: 1, email: "test@email.com" } },
       });
     });
   });
 
-  describe('refresh token', () => {
-    it('should return new access token', async () => {
+  describe("refresh token", () => {
+    it("should return new access token", async () => {
       const validRefreshToken = createNewToken({
-        username: 'testing_username',
+        email: "test@email.com",
         userId: 1,
         expiration: refreshTokenMaxAge,
       });
       authRepo.getTokenByUserId.mockResolvedValue(validRefreshToken);
       const result = await authService.refreshToken(validRefreshToken);
-      expect(result).toHaveProperty('token');
+      if (!result.token) {
+        fail("auth service should return token");
+      }
+      expect(result).toHaveProperty("token");
 
-      const { decodedData: accessToken } = verifyToken(result.token!);
-      expect(accessToken).toHaveProperty('username');
-      expect(accessToken).toHaveProperty('userId');
+      const { decodedData: accessToken } = verifyToken(result.token);
+      expect(accessToken).toHaveProperty("email");
+      expect(accessToken).toHaveProperty("userId");
       expect(accessToken?.userId).toBe(1);
-      expect(accessToken?.username).toBe('testing_username');
+      expect(accessToken?.email).toBe("test@email.com");
     });
 
-    it('should fail caused invalid refresh token', async () => {
-      const invalidToken = 'invalid token';
+    it("should fail caused invalid refresh token", async () => {
+      const invalidToken = "invalid token";
       const result = await authService.refreshToken(invalidToken);
-      expect(result.response.status).toBe('fail');
-      expect(result.response.errors?.message).toBe('invalid refresh token');
+      if (result.response.status === "success") {
+        fail("auth service should failed cause invalid token");
+      }
+      expect(result.response.status).toBe("fail");
+      expect(result.response.errors?.message).toBe("invalid refresh token");
     });
 
-    it('should fail caused token not found in db', async () => {
+    it("should fail caused token not found in db", async () => {
       const validRefreshToken = createNewToken({
-        username: 'testing_username',
+        email: "test@email.com",
         userId: 1,
         expiration: refreshTokenMaxAge,
       });
       authRepo.getTokenByUserId.mockRejectedValue(
-        'token not found in database',
+        "token not found in database",
       );
       const result = await authService.refreshToken(validRefreshToken);
 
+      if (result.response.status === "success") {
+        fail("auth service should failed cause invalid token");
+      }
       expect(authRepo.getTokenByUserId).toHaveBeenCalled();
-      expect(result).not.toHaveProperty('token');
-      expect(result.response.status).toBe('fail');
+      expect(result).not.toHaveProperty("token");
+      expect(result.response.status).toBe("fail");
       expect(result.response.errors?.message).toBe(
-        'token not found in database',
+        "token not found in database",
       );
     });
 
-    it('should fail caused token is not the same with in db', async () => {
+    it("should fail caused token is not the same with in db", async () => {
       const tokenFromDb = createNewToken({
-        username: 'testing_username',
+        email: "test@email.com",
         userId: 1,
         expiration: refreshTokenMaxAge,
       });
       authRepo.getTokenByUserId.mockResolvedValue(tokenFromDb);
 
       const tokenFromUser = createNewToken({
-        username: 'invalid username but valid token',
+        email: "test@email.com",
         userId: 1,
         expiration: refreshTokenMaxAge,
       });
       const result = await authService.refreshToken(tokenFromUser);
 
+      if (result.response.status === "success") {
+        fail("auth service should failed cause invalid token");
+      }
       expect(authRepo.getTokenByUserId).toHaveBeenCalled();
-      expect(result).not.toHaveProperty('token');
-      expect(result.response.status).toBe('fail');
-      expect(result.response.errors?.message).toBe('invalid refresh token');
+      expect(result).not.toHaveProperty("token");
+      expect(result.response.status).toBe("fail");
+      expect(result.response.errors?.message).toBe("invalid refresh token");
     });
   });
 });
