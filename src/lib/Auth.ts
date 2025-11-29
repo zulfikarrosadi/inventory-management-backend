@@ -1,10 +1,10 @@
-import { compare, hash } from 'bcrypt';
+import { compare, hash } from "bcrypt";
 import {
   accessTokenMaxAge,
   createNewToken,
   refreshTokenMaxAge,
   verifyToken,
-} from './token';
+} from "./token";
 
 export class Auth {
   protected async verifyPassword(data: string | Buffer, encrypted: string) {
@@ -15,17 +15,17 @@ export class Auth {
     return await hash(password, 10);
   }
 
-  protected createAccessToken(data: { username: string; userId: number }) {
+  protected createAccessToken(data: { email: string; userId: number }) {
     return createNewToken({
-      username: data.username,
+      email: data.email,
       userId: data.userId,
       expiration: accessTokenMaxAge,
     });
   }
 
-  protected createRefreshToken(data: { username: string; userId: number }) {
+  protected createRefreshToken(data: { email: string; userId: number }) {
     return createNewToken({
-      username: data.username,
+      email: data.email,
       userId: data.userId,
       expiration: refreshTokenMaxAge,
     });

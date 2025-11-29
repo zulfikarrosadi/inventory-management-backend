@@ -18,7 +18,7 @@ interface InventoryService {
 }
 
 class InventoryHandler {
-  constructor(private service: InventoryService) {}
+  constructor(private service: InventoryService) { }
 
   createStock = async (
     req: Request<{}, {}, CreateStock>,
